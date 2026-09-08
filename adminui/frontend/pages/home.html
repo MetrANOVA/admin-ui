@@ -1,0 +1,123 @@
+<section class="flex flex-col items-center gap-4 px-16 pt-[28px] pb-[88px]">
+	<div class="flex w-full max-w-[1348px] flex-col items-center gap-4">
+		<div class="flex w-full items-end gap-6 rounded-xl bg-tertiary px-8 py-6">
+			<h1 class="h1 display2">Admin Portal</h1>
+		</div>
+
+		<div class="flex w-full items-stretch justify-center gap-6 py-2">
+			<a
+				href="/define-table"
+				hx-get="/pages/clickhouse-table.html"
+				hx-target="#main-content"
+				hx-push-url="/define-table"
+				class="pkts-card flex min-w-0 flex-1 flex-col items-center justify-between gap-6 rounded-xl"
+			>
+				<div class="flex w-full flex-col items-start gap-2">
+					<div class="flex w-full min-w-0 items-center gap-4">
+						<i data-lucide="table-2" class="h-8 w-8 shrink-0 text-copy"></i>
+						<p class="h4 min-w-0 flex-1 text-copy">Define Clickhouse Table</p>
+					</div>
+					<p class="min-h-10 px-2 py-1 text-base text-copy">
+						View and manage your Clickhouse database tables, schemas, and data
+						ingestion.
+					</p>
+				</div>
+				<span class="pkts-icon-button pkts-primary pkts-square">
+					<i data-lucide="arrow-right" class="h-6 w-6"></i>
+				</span>
+			</a>
+
+			<a
+				href="/metadata-manager"
+				hx-get="/pages/manage-metadata.html"
+				hx-target="#main-content"
+				hx-push-url="/metadata-manager"
+				class="pkts-card flex min-w-0 flex-1 flex-col items-center justify-between gap-6 rounded-xl"
+			>
+				<div class="flex w-full flex-col items-start gap-2">
+					<div class="flex w-full min-w-0 items-center gap-4">
+						<i data-lucide="file-json" class="h-8 w-8 shrink-0 text-copy"></i>
+						<p class="h4 min-w-0 flex-1 text-copy">Metadata Manager</p>
+					</div>
+					<p class="min-h-10 px-2 py-1 text-base text-copy">
+						Browse and configure metadata, table definitions, and column mappings.
+					</p>
+				</div>
+				<span class="pkts-icon-button pkts-primary pkts-square">
+					<i data-lucide="arrow-right" class="h-6 w-6"></i>
+				</span>
+			</a>
+
+			<a
+				href="/define-pipeline"
+				hx-get="/pages/define-pipelines.html"
+				hx-target="#main-content"
+				hx-push-url="/define-pipeline"
+				class="pkts-card flex min-w-0 flex-1 flex-col items-center justify-between gap-6 rounded-xl"
+			>
+				<div class="flex w-full flex-col items-start gap-2">
+					<div class="flex w-full min-w-0 items-center gap-4">
+						<i data-lucide="workflow" class="h-8 w-8 shrink-0 text-copy"></i>
+						<p class="h4 min-w-0 flex-1 text-copy">Define Pipelines</p>
+					</div>
+					<p class="min-h-10 px-2 py-1 text-base text-copy">
+						Configure pipeline rules and control how your data flows through the system
+					</p>
+				</div>
+				<span class="pkts-icon-button pkts-primary pkts-square">
+					<i data-lucide="arrow-right" class="h-6 w-6"></i>
+				</span>
+			</a>
+		</div>
+
+		<div class="flex w-full items-stretch gap-6 py-2">
+			<div
+				class="pkts-card flex min-w-0 flex-1 flex-col items-center gap-6 overflow-hidden rounded-[18px]"
+			>
+				<p class="h5 text-copy">Recent Activities</p>
+				<table class="pkts-data-table">
+					<tbody id="recent-activities-rows"></tbody>
+				</table>
+			</div>
+
+			<div
+				class="pkts-card flex min-w-0 flex-1 flex-col items-center gap-6 overflow-hidden rounded-[18px]"
+			>
+				<p class="h5 text-copy">Favorites</p>
+				<table class="pkts-data-table">
+					<tbody id="favorites-rows"></tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script type="module">
+	const ACTIVITY_ICONS = { metadata: "file-json", table: "table-2" };
+
+	fetch(`${window.ADMINUI_API_BASE}/home`)
+		.then((res) => res.json())
+		.then((data) => {
+			renderActivityRows("recent-activities-rows", data.recent_activities);
+			renderActivityRows("favorites-rows", data.favorites);
+		})
+		.catch((err) => console.error("Failed to load /home mock data", err));
+
+	function renderActivityRows(elementId, rows) {
+		const list = document.getElementById(elementId);
+		list.innerHTML = (rows || [])
+			.map(
+				(row) => `
+					<tr>
+						<td><i data-lucide="${ACTIVITY_ICONS[row.type] || "file-json"}" class="h-6 w-6 text-copy"></i></td>
+						<td>${row.name}</td>
+						<td>${row.timestamp}</td>
+					</tr>
+				`,
+			)
+			.join("");
+		if (window.lucide) {
+			window.lucide.createIcons();
+		}
+	}
+</script>

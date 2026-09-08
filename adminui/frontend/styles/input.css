@@ -1,0 +1,91 @@
+/* Packets Design System, the base the Figma mockups are built on */
+@import "@esnet/packets-ui-css/dist/styles.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--background: #9fc9d2;
+	--surface-1: #fafaf0;
+	--surface-2: #a5b3b7;
+	--surface-3: #ffffff;
+	--copy: #252f30;
+	--copy-alt: #4d595d;
+	--primary: #45a9bf;
+	--secondary: #345f68;
+	--tertiary: #da8f53;
+	--success: #00960a;
+}
+
+/* Dark-mode tokens */
+[data-theme="dark"] {
+	--background: #252f30;
+	--surface-1: #214148;
+	--surface-2: #292430;
+	--surface-3: #000000;
+	--copy: #fafaf0;
+	--copy-alt: #a5b3b7;
+	--primary: #45a9bf;
+	--secondary: #9fc9d2;
+	--tertiary: #bf7f45;
+	--success: #00960a;
+}
+
+body {
+	background-color: var(--surface-1);
+	background-image: url("/assets/page-background-light.png");
+	background-size: cover;
+	background-position: right center;
+	background-repeat: no-repeat;
+	color: var(--copy);
+	/* Cards can overflow horizontally at narrow widths; this hides that. */
+	overflow-x: hidden;
+}
+
+[data-theme="dark"] body {
+	background-image: url("/assets/page-background-dark.png");
+}
+
+.nav-link-active {
+	color: var(--primary);
+}
+
+/* Packets underlines all <a> tags by default; we use <a> for whole nav
+	 items/cards, not inline text links, so changed that. */
+a.pkts-card,
+a[data-nav-link] {
+	text-decoration: none;
+}
+
+/* Packets puts bullets on every <ul> by default; none of ours are lists. */
+.packets ul {
+	list-style: none;
+	padding-left: 0;
+}
+
+/* Packets puts a bottom margin on every <p> by default; zero it out. */
+.packets p {
+	margin: 0;
+}
+
+/* Packets forces width:100% on headings/paragraphs, which breaks the header
+	 banner's title+subtitle sizing to content in a flex row. Scoped narrowly
+	 (not .h4) since card titles need the opposite: shrink/wrap enabled. */
+h1.h1,
+#home-welcome {
+	width: auto !important;
+	flex: none !important;
+	margin: 0 !important;
+}
+
+/* Packets colors :visited/:hover links; ours should stay copy/primary. */
+a.pkts-card:visited,
+a.pkts-card:hover,
+a[data-nav-link]:visited {
+	color: var(--copy);
+}
+
+a[data-nav-link]:hover {
+	color: var(--primary);
+}

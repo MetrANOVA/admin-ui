@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en" class="packets">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>MetrANOVA Admin</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Signika:wght@300..700&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap"
+			rel="stylesheet"
+		/>
+		<!-- output.css bundles both the Packets Design System and our own
+		 Tailwind utilities for anything not yet migrated to .pkts- classes. -->
+		<link rel="stylesheet" href="/styles/output.css" />
+		<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+		<script src="https://unpkg.com/lucide@latest"></script>
+		<script>
+			(function () {
+				var theme = localStorage.getItem("theme") || "light";
+				var html = document.documentElement;
+				html.setAttribute("data-theme", theme);
+				html.classList.toggle("dark", theme === "dark");
+				html.classList.toggle("light", theme === "light");
+			})();
+		</script>
+	</head>
+	<body class="font-sans">
+		<div class="flex min-h-screen flex-col">
+			<div class="flex flex-1">
+				<div
+					id="nav-left"
+					hx-get="/partials/nav_left.html"
+					hx-trigger="load"
+					hx-swap="innerHTML"
+				></div>
+				<div id="main-content" class="min-w-0 flex-1"></div>
+			</div>
+		</div>
+		<script type="module" src="/scripts/app.js"></script>
+	</body>
+</html>

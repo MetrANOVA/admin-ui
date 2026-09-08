@@ -1,0 +1,145 @@
+<nav
+	class="flex h-full w-80 shrink-0 flex-col gap-12 bg-background px-6 py-12 shadow-[0px_2px_1.5px_rgba(0,0,0,0.4)] dark:bg-surface1"
+>
+	<a
+		href="/"
+		hx-get="/pages/home.html"
+		hx-target="#main-content"
+		hx-push-url="/"
+		aria-label="Go to homepage"
+		class="flex items-center"
+	>
+		<img
+			src="/assets/metranova-logo-light.png"
+			alt="MetrANOVA"
+			class="block w-auto dark:hidden"
+		/>
+		<img
+			src="/assets/metranova-logo-dark.png"
+			alt="MetrANOVA"
+			class="hidden w-auto dark:block"
+		/>
+	</a>
+
+	<div class="flex flex-1 flex-col gap-6 overflow-hidden">
+		<div class="flex flex-col gap-4">
+			<p class="label-1 mono text-secondary">Actions</p>
+			<div class="flex gap-4">
+				<div class="w-1 shrink-0 rounded bg-copy-alt"></div>
+				<ul class="flex flex-col gap-2">
+					<li>
+						<a
+							href="/define-table"
+							data-nav-link
+							hx-get="/pages/clickhouse-table.html"
+							hx-target="#main-content"
+							hx-push-url="/define-table"
+							class="flex items-center gap-2 px-2 py-1 text-base tracking-[-0.18px] text-copy hover:text-primary"
+							><span
+								data-nav-dot
+								class="hidden h-4 w-4 shrink-0 rounded-full bg-primary"
+							></span
+							>Define Clickhouse Table</a
+						>
+					</li>
+					<li>
+						<a
+							href="/metadata-manager"
+							data-nav-link
+							hx-get="/pages/manage-metadata.html"
+							hx-target="#main-content"
+							hx-push-url="/metadata-manager"
+							class="flex items-center gap-2 px-2 py-1 text-base tracking-[-0.18px] text-copy hover:text-primary"
+							><span
+								data-nav-dot
+								class="hidden h-4 w-4 shrink-0 rounded-full bg-primary"
+							></span
+							>Metadata Manager</a
+						>
+					</li>
+					<li>
+						<a
+							href="/define-pipeline"
+							data-nav-link
+							hx-get="/pages/define-pipelines.html"
+							hx-target="#main-content"
+							hx-push-url="/define-pipeline"
+							class="flex items-center gap-2 px-2 py-1 text-base tracking-[-0.18px] text-copy hover:text-primary"
+							><span
+								data-nav-dot
+								class="hidden h-4 w-4 shrink-0 rounded-full bg-primary"
+							></span
+							>Define Pipelines</a
+						>
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="flex flex-col gap-4">
+			<p class="label-1 mono text-secondary">Library</p>
+			<div class="flex gap-4">
+				<div class="w-1 shrink-0 rounded bg-copy-alt"></div>
+				<ul class="flex flex-col gap-2">
+					<li>
+						<a
+							href="/tables"
+							data-nav-link
+							hx-get="/pages/tables.html"
+							hx-target="#main-content"
+							hx-push-url="/tables"
+							class="flex items-center gap-2 px-2 py-1 text-base tracking-[-0.18px] text-copy hover:text-primary"
+							><span
+								data-nav-dot
+								class="hidden h-4 w-4 shrink-0 rounded-full bg-primary"
+							></span
+							>Clickhouse Tables</a
+						>
+					</li>
+					<li>
+						<a
+							href="/pipelines"
+							data-nav-link
+							hx-get="/pages/pipelines.html"
+							hx-target="#main-content"
+							hx-push-url="/pipelines"
+							class="flex items-center gap-2 px-2 py-1 text-base tracking-[-0.18px] text-copy hover:text-primary"
+							><span
+								data-nav-dot
+								class="hidden h-4 w-4 shrink-0 rounded-full bg-primary"
+							></span
+							>Pipelines</a
+						>
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<!-- TODO: Fix this -->
+		<div class="flex flex-col gap-4">
+			<p class="label-1 mono text-secondary">Settings</p>
+			<div class="flex gap-4">
+				<div class="w-1 shrink-0 rounded bg-copy-alt"></div>
+				<ul class="flex flex-col gap-2">
+					<li class="px-2 py-1 text-base tracking-[-0.18px] text-copy">Settings</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<div class="flex flex-col items-start gap-4">
+		<button
+			id="theme-toggle"
+			type="button"
+			title="Switch to Dark Mode"
+			aria-label="Switch to Dark Mode"
+			class="flex h-9 w-9 items-center justify-center rounded-full border border-surface2 text-copy transition-colors hover:border-primary hover:text-primary"
+		>
+			<i data-lucide="sun" class="hidden h-5 w-5 dark:block"></i>
+			<i data-lucide="moon" class="block h-5 w-5 dark:hidden"></i>
+		</button>
+		<div class="pkts-avatar pkts-large bg-[#4ba9b3]">
+			<span>ES</span>
+		</div>
+	</div>
+</nav>
