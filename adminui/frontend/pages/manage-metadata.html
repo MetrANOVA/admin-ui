@@ -25,6 +25,7 @@
 						<th scope="col">
 							<div class="labelWrapper">Table Name</div>
 						</th>
+						<!-- Created By is unconfirmed — the API has no concept of users. -->
 						<th scope="col">
 							<div class="labelWrapper">
 								<span>Created By</span>
@@ -94,9 +95,16 @@
 <div hx-get="/partials/confirm_modal.html" hx-trigger="load" hx-swap="outerHTML"></div>
 
 <script type="module">
-	// Layout pass for issue #3. Rows come from placeholder data on purpose:
-	// GET /metadata/ has no paging, search or sort, and returns neither
-	// Created By nor Created Date. Those are open questions on the issue.
+	// Layout pass for issue #3. Rows are placeholder data.
+	//
+	// The paging and search below are a stand-in. Paging, search and sorting are
+	// going onto the API (confirmed with the team) — once GET /metadata/ takes
+	// limit/offset/q/sort and returns a total, this drops out in favour of real
+	// requests. Don't build on it.
+	//
+	// Created Date is staying. Created By is not confirmed and may not be
+	// available at all; if it goes, field_count or identifier are already in the
+	// response and say more about a table than who made it.
 	const PAGE_SIZE = 12;
 
 	// Names taken from the mockup so the shape of the page is visible before the
