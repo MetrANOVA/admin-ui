@@ -13,6 +13,12 @@
 
 	The same dialog serves Define Clickhouse Table, which has an identical
 	confirmation step in the mockups.
+
+	Records are saved one at a time, never in bulk — a team decision, to avoid
+	synchronicity problems in ClickHouse. The API is already shaped that way:
+	/metadata has no batch endpoint, unlike /type and /transformers. So if this
+	dialog ever lists changes spanning more than one record, saving has to walk
+	them sequentially and report partial success rather than fire one request.
 -->
 <dialog
 	id="confirm-modal"
