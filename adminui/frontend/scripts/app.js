@@ -15,6 +15,8 @@ const ROUTES = {
 	"/": "/pages/home.html",
 	"/define-table": "/pages/clickhouse-table.html",
 	"/metadata-manager": "/pages/manage-metadata.html",
+	"/metadata-saved": "/pages/metadata-saved.html",
+	"/metadata-records": "/pages/metadata-records.html",
 	"/define-pipeline": "/pages/define-pipelines.html",
 	"/tables": "/pages/tables.html",
 	"/pipelines": "/pages/pipelines.html",

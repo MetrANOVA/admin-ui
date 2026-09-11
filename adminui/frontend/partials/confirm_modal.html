@@ -1,0 +1,183 @@
+<!--
+	Confirm dialog used before saving a change. Packets ships no modal, so this
+	is a native <dialog>: it gives us the top layer, backdrop, Esc-to-close and
+	focus trapping for free.
+
+	Open it with:
+
+		window.openConfirmModal({
+			title: "Are you sure you want to change content for meta_interface?",
+			rows: [{ key: "start_time", column: "DateTime64(3, 'UTC')", original: "False", changed: "False" }],
+			onConfirm: () => { ... },
+		});
+
+	The same dialog serves Define Clickhouse Table, which has an identical
+	confirmation step in the mockups.
+
+	Records are saved one at a time, never in bulk — a team decision, to avoid
+	synchronicity problems in ClickHouse. The API is already shaped that way:
+	/metadata has no batch endpoint, unlike /type and /transformers. So if this
+	dialog ever lists changes spanning more than one record, saving has to walk
+	them sequentially and report partial success rather than fire one request.
+-->
+<dialog
+	id="confirm-modal"
+	class="w-[min(1045px,calc(100vw-2rem))] rounded-[18px] border-2 border-copy bg-surface1 p-0 text-copy backdrop:bg-black/40"
+	aria-labelledby="confirm-modal-title"
+>
+	<form method="dialog" class="flex flex-col gap-6 p-8">
+		<button
+			value="cancel"
+			class="absolute right-4 top-4 inline-flex text-inherit opacity-70 transition-opacity hover:opacity-100"
+			aria-label="Close"
+		>
+			<i data-lucide="circle-x" class="h-5 w-5"></i>
+		</button>
+
+		<div class="flex items-center justify-center gap-3 pr-8">
+			<i data-lucide="circle-alert" class="h-6 w-6 shrink-0"></i>
+			<h2 class="h4" id="confirm-modal-title"></h2>
+		</div>
+
+		<div class="w-full overflow-x-auto">
+			<table class="pkts-data-table w-full">
+				<thead>
+					<tr>
+						<th scope="col"><div class="labelWrapper">Primary Key</div></th>
+						<th scope="col"><div class="labelWrapper">Changed Column Name</div></th>
+						<th scope="col"><div class="labelWrapper">Original Content</div></th>
+						<th scope="col"><div class="labelWrapper">Changed Content</div></th>
+					</tr>
+				</thead>
+				<tbody id="confirm-modal-rows"></tbody>
+				<tfoot id="confirm-modal-foot">
+					<tr>
+						<td colspan="4">
+							<div
+								class="flex flex-wrap items-center justify-center gap-2"
+								id="confirm-modal-pager"
+							></div>
+						</td>
+					</tr>
+				</tfoot>
+			</table>
+		</div>
+
+		<div class="flex flex-wrap justify-end gap-3">
+			<button
+				value="cancel"
+				class="pkts-button inline-flex items-center gap-2 border-copy bg-copy text-surface1"
+			>
+				<i data-lucide="x" class="h-5 w-5"></i>
+				Cancel
+			</button>
+			<button
+				value="confirm"
+				id="confirm-modal-save"
+				class="pkts-button inline-flex items-center gap-2 border-success bg-success text-white"
+			>
+				<i data-lucide="save" class="h-5 w-5"></i>
+				Save
+			</button>
+		</div>
+	</form>
+</dialog>
+
+<script type="module">
+	const PAGE_SIZE = 6;
+
+	const dialog = document.getElementById("confirm-modal");
+	const titleEl = document.getElementById("confirm-modal-title");
+	const rowsEl = document.getElementById("confirm-modal-rows");
+	const pagerEl = document.getElementById("confirm-modal-pager");
+	const footEl = document.getElementById("confirm-modal-foot");
+
+	let rows = [];
+	let page = 1;
+	let onConfirm = null;
+
+	function chip(value, quiet) {
+		return `<span class="pkts-chip${quiet ? " pkts-outline" : ""}">${value}</span>`;
+	}
+
+	function renderRows() {
+		const slice = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+		rowsEl.innerHTML = slice
+			.map(
+				(row) => `
+					<tr>
+						<td data-parent="Primary Key" class="mono">${row.key}</td>
+						<td data-parent="Changed Column Name" class="mono">${row.column}</td>
+						<td data-parent="Original Content">${chip(row.original, true)}</td>
+						<td data-parent="Changed Content">${chip(row.changed, false)}</td>
+					</tr>
+				`,
+			)
+			.join("");
+	}
+
+	function pageButton(label, targetPage, { active = false, disabled = false } = {}) {
+		const variant = active ? "pkts-primary" : "pkts-secondary";
+		return `<button type="button" class="pkts-button pkts-small ${variant}" data-page="${targetPage}"${
+			disabled ? " disabled" : ""
+		}>${label}</button>`;
+	}
+
+	function renderPager() {
+		const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+		footEl.style.display = totalPages <= 1 ? "none" : "";
+		if (totalPages <= 1) {
+			pagerEl.innerHTML = "";
+			return;
+		}
+		const parts = [pageButton("Prev", page - 1, { disabled: page === 1 })];
+		const shown = [...new Set([1, page, totalPages])].sort((a, b) => a - b);
+		let previous = 0;
+		for (const n of shown) {
+			if (n - previous > 1) {
+				parts.push(`<span class="px-1">…</span>`);
+			}
+			parts.push(pageButton(String(n), n, { active: n === page }));
+			previous = n;
+		}
+		parts.push(pageButton("Next", page + 1, { disabled: page === totalPages }));
+		pagerEl.innerHTML = parts.join("");
+	}
+
+	function render() {
+		renderRows();
+		renderPager();
+		if (window.lucide) {
+			window.lucide.createIcons();
+		}
+	}
+
+	pagerEl.addEventListener("click", (event) => {
+		const button = event.target.closest("[data-page]");
+		if (!button || button.disabled) {
+			return;
+		}
+		page = Number(button.dataset.page);
+		render();
+	});
+
+	// Bound to the form's submit rather than the dialog's close event: submit
+	// carries the button that triggered it, and fires reliably.
+	dialog.querySelector("form").addEventListener("submit", (event) => {
+		const confirmed = event.submitter && event.submitter.value === "confirm";
+		const handler = onConfirm;
+		onConfirm = null;
+		if (confirmed && typeof handler === "function") {
+			handler();
+		}
+	});
+
+	window.openConfirmModal = ({ title, rows: nextRows = [], onConfirm: handler = null }) => {
+		titleEl.textContent = title;
+		rows = nextRows;
+		page = 1;
+		onConfirm = handler;
+		render();
+		dialog.showModal();
+	};
+</script>
