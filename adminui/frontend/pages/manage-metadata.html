@@ -148,7 +148,12 @@
 		rowsEl.innerHTML = rows
 			.map(
 				(row) => `
-					<tr>
+					<tr
+						class="cursor-pointer"
+						hx-get="/pages/metadata-records.html"
+						hx-target="#main-content"
+						hx-push-url="/metadata-records"
+					>
 						<td data-parent="Table Name">${row.name}</td>
 						<td data-parent="Created By">${row.created_by}</td>
 						<td data-parent="Created Date">${row.created_at}</td>
@@ -156,6 +161,10 @@
 				`,
 			)
 			.join("");
+		// Rows are rendered after htmx scanned the page, so their hx-* need processing.
+		if (window.htmx) {
+			window.htmx.process(rowsEl);
+		}
 	}
 
 	function pageButton(label, targetPage, { active = false, disabled = false } = {}) {

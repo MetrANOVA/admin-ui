@@ -1,0 +1,477 @@
+<section
+	class="flex flex-col items-center gap-4 px-16 pt-[28px] pb-[88px]"
+	id="records"
+	data-state="view"
+>
+	<div class="flex w-full max-w-[1348px] flex-col items-center gap-6">
+		<h1 class="h1 display2" id="records-title">meta_interface</h1>
+
+		<div class="pkts-card flex w-full flex-col gap-4 rounded-[18px]">
+			<p class="text-base text-copy-alt" data-only="choose">Choose a row to edit</p>
+
+			<div class="flex w-full items-start gap-6">
+				<div class="min-w-0 flex-1 overflow-x-auto" id="records-table-wrap">
+					<table class="pkts-data-table w-full">
+						<thead id="records-head"></thead>
+						<tbody id="records-rows"></tbody>
+						<tfoot id="records-foot">
+							<tr>
+								<td id="records-foot-cell">
+									<div
+										class="flex flex-wrap items-center justify-center gap-2"
+										id="records-pager"
+									></div>
+								</td>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+
+				<!--
+					Edit panel. Drawn as a side panel on the same page, which differs from
+					Johanna's comment #62 (a separate page) — flagged on issue #3.
+					Save/Cancel are not in the mockup; the panel is cut off there. They are
+					here because a form without them can't be judged, and Save feeds the
+					confirm modal, which is drawn.
+				-->
+				<form
+					class="flex w-[46%] shrink-0 flex-col gap-4 rounded-[12px] bg-surface2 p-6"
+					id="records-editor"
+					data-only="edit"
+				>
+					<div
+						class="flex max-h-[560px] flex-col gap-4 overflow-y-auto pr-2"
+						id="records-fields"
+					></div>
+					<div class="flex justify-end gap-3 pt-2">
+						<button
+							type="button"
+							id="records-cancel"
+							class="pkts-button inline-flex items-center gap-2 border-copy bg-copy text-surface1"
+						>
+							<i data-lucide="x" class="h-5 w-5"></i>
+							Cancel
+						</button>
+						<button
+							type="submit"
+							class="pkts-button inline-flex items-center gap-2 border-success bg-success text-white"
+						>
+							<i data-lucide="save" class="h-5 w-5"></i>
+							Save
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<div class="flex w-full justify-end" data-only="view">
+			<button
+				type="button"
+				id="records-edit"
+				class="pkts-button border-tertiary bg-tertiary text-white"
+			>
+				Edit Metadata
+			</button>
+		</div>
+	</div>
+</section>
+
+<div hx-get="/partials/confirm_modal.html" hx-trigger="load" hx-swap="outerHTML"></div>
+
+<script type="module">
+	// Layout pass for issue #3: the records view for one metadata type, in
+	// three states — view, choose (pick a row), edit (side panel).
+	//
+	// Fixed to meta_interface until the list can pass a slug through; the real
+	// source is GET /metadata/{slug}, which today returns every record (paging
+	// is going onto the API — don't build on the client-side paging here).
+	//
+	// Columns and the first rows are the real meta_interface schema and data
+	// from the test stack, so the width and mix of types are honest.
+	const PAGE_SIZE = 12;
+	const RECORD_ID = "id";
+
+	// Reserved columns are set by the system and locked in the API; they show
+	// in the table but not in the editor.
+	const RESERVED = new Set([
+		"id",
+		"ref",
+		"hash",
+		"created_at",
+		"insert_time",
+		"updated_at",
+		"tag",
+		"policy_level",
+		"policy_scope",
+		"policy_originator",
+		"ext",
+	]);
+
+	// Only id and ref carry sort/filter, as drawn. Johanna's note on the mockup
+	// says she isn't sure which columns should — "perhaps primary key cols?".
+	const SORTABLE = new Set(["id", "ref"]);
+
+	const COLUMNS = [
+		["id", "String"],
+		["ref", "String"],
+		["hash", "String"],
+		["insert_time", "DateTime"],
+		["ext", "JSON"],
+		["tag", "Array(String)"],
+		["type", "String"],
+		["description", "String"],
+		["device_id", "String"],
+		["device_ref", "String"],
+		["edge", "Bool"],
+		["flow_index", "UInt32"],
+		["ipv4", "IPv4"],
+		["ipv6", "IPv6"],
+		["name", "String"],
+		["speed", "UInt64"],
+		["circuit_id", "Array(String)"],
+		["circuit_ref", "Array(String)"],
+		["peer_as_id", "UInt32"],
+		["peer_as_ref", "String"],
+		["peer_interface_ipv4", "IPv4"],
+		["peer_interface_ipv6", "IPv6"],
+		["lag_member_interface_id", "Array(String)"],
+		["lag_member_interface_ref", "Array(String)"],
+		["port_interface_id", "String"],
+		["port_interface_ref", "String"],
+		["remote_interface_id", "String"],
+		["remote_interface_ref", "String"],
+		["remote_organization_id", "String"],
+		["remote_organization_ref", "String"],
+	].map(([name, type]) => ({ name, type }));
+
+	const REAL = [
+		{
+			id: "sfo-cr1::sfo_se-1553",
+			ref: "sfo-cr1::sfo_se-1553__v2",
+			hash: "3f9a…c21e",
+			insert_time: "2026-08-11 15:21:14",
+			ext: "{}",
+			tag: [],
+			type: "service_l3vpn",
+			description: "San Francisco SE-1553",
+			device_id: "sfo-cr1",
+			device_ref: "sfo-cr1__v1",
+			edge: true,
+			flow_index: 7,
+			ipv4: "207.231.240.165",
+			ipv6: "2001:504:b:20::165",
+			name: "sfo_se-1553",
+			speed: 1000,
+			circuit_id: ["losa-sfo-1553"],
+			circuit_ref: ["losa-sfo-1553__v1"],
+			peer_as_id: 67890,
+			peer_as_ref: null,
+			peer_interface_ipv4: "207.231.240.165",
+			peer_interface_ipv6: "2001:504:b:20::165",
+			lag_member_interface_id: [],
+			lag_member_interface_ref: [],
+			port_interface_id: "sfo-cr1::lag1",
+			port_interface_ref: "sfo-cr1::lag1__v2",
+			remote_interface_id: "losa-cr6::losa_se-1553",
+			remote_interface_ref: "losa-cr6::losa_se-1553__v2",
+			remote_organization_id: null,
+			remote_organization_ref: null,
+		},
+		{
+			id: "sfo-cr1::port2",
+			ref: "sfo-cr1::port2__v2",
+			hash: "a17d…0b44",
+			insert_time: "2026-08-11 15:21:14",
+			ext: "{}",
+			tag: [],
+			type: "port",
+			description: "San Francisco Port 2",
+			device_id: "sfo-cr1",
+			device_ref: "sfo-cr1__v1",
+			edge: true,
+			flow_index: 10,
+			ipv4: null,
+			ipv6: null,
+			name: "port2",
+			speed: 1000,
+			circuit_id: [],
+			circuit_ref: [],
+			peer_as_id: null,
+			peer_as_ref: null,
+			peer_interface_ipv4: null,
+			peer_interface_ipv6: null,
+			lag_member_interface_id: [],
+			lag_member_interface_ref: [],
+			port_interface_id: null,
+			port_interface_ref: null,
+			remote_interface_id: null,
+			remote_interface_ref: null,
+			remote_organization_id: null,
+			remote_organization_ref: null,
+		},
+		{
+			id: "losa-cr6::ae1553",
+			ref: "losa-cr6::ae1553__v2",
+			hash: "77e0…9d12",
+			insert_time: "2026-08-11 15:21:14",
+			ext: "{}",
+			tag: [],
+			type: "port",
+			description: "Los Angeles AE1553",
+			device_id: "losa-cr6",
+			device_ref: "losa-cr6__v1",
+			edge: true,
+			flow_index: 12357,
+			ipv4: null,
+			ipv6: null,
+			name: "ae1553",
+			speed: 1000,
+			circuit_id: [],
+			circuit_ref: [],
+			peer_as_id: null,
+			peer_as_ref: null,
+			peer_interface_ipv4: null,
+			peer_interface_ipv6: null,
+			lag_member_interface_id: [],
+			lag_member_interface_ref: [],
+			port_interface_id: null,
+			port_interface_ref: null,
+			remote_interface_id: null,
+			remote_interface_ref: null,
+			remote_organization_id: null,
+			remote_organization_ref: null,
+		},
+		{
+			id: "sfo-cr1::port1",
+			ref: "sfo-cr1::port1__v2",
+			hash: "c4b2…5e7a",
+			insert_time: "2026-08-11 15:21:14",
+			ext: "{}",
+			tag: [],
+			type: "port",
+			description: "San Francisco Port 1",
+			device_id: "sfo-cr1",
+			device_ref: "sfo-cr1__v1",
+			edge: true,
+			flow_index: 9,
+			ipv4: null,
+			ipv6: null,
+			name: "port1",
+			speed: 1000,
+			circuit_id: [],
+			circuit_ref: [],
+			peer_as_id: null,
+			peer_as_ref: null,
+			peer_interface_ipv4: null,
+			peer_interface_ipv6: null,
+			lag_member_interface_id: [],
+			lag_member_interface_ref: [],
+			port_interface_id: null,
+			port_interface_ref: null,
+			remote_interface_id: null,
+			remote_interface_ref: null,
+			remote_organization_id: null,
+			remote_organization_ref: null,
+		},
+	];
+
+	// Pad the four real rows to two pages so the pager is exercised.
+	const DEVICES = ["losa-cr6", "sfo-cr1", "chic-cr5", "wash-cr6", "denv-cr5"];
+	const RECORDS = [
+		...REAL,
+		...Array.from({ length: 11 }, (_, i) => {
+			const device = DEVICES[i % DEVICES.length];
+			const name = `port${i + 3}`;
+			return {
+				...REAL[1],
+				id: `${device}::${name}`,
+				ref: `${device}::${name}__v1`,
+				hash: `${(i * 2654435761).toString(16).slice(0, 4)}…${(i * 40503).toString(16).slice(-4)}`,
+				device_id: device,
+				device_ref: `${device}__v1`,
+				flow_index: 20 + i,
+				name,
+				description: `${device.split("-")[0].toUpperCase()} Port ${i + 3}`,
+			};
+		}),
+	];
+
+	const root = document.getElementById("records");
+	const headEl = document.getElementById("records-head");
+	const rowsEl = document.getElementById("records-rows");
+	const pagerEl = document.getElementById("records-pager");
+	const footEl = document.getElementById("records-foot");
+	const footCell = document.getElementById("records-foot-cell");
+	const editorEl = document.getElementById("records-editor");
+	const fieldsEl = document.getElementById("records-fields");
+	const tableWrap = document.getElementById("records-table-wrap");
+
+	let page = 1;
+	let selectedId = null;
+
+	function show(value) {
+		return value === null || value === undefined
+			? ""
+			: Array.isArray(value)
+				? value.join(", ")
+				: String(value);
+	}
+
+	function setState(state) {
+		root.dataset.state = state;
+		root.querySelectorAll("[data-only]").forEach((el) => {
+			el.style.display = el.dataset.only === state ? "" : "none";
+		});
+		// In edit the table gives up half the card; the mockup keeps it visible.
+		tableWrap.classList.toggle("max-w-[50%]", state === "edit");
+		if (state !== "edit") {
+			selectedId = null;
+		}
+		render();
+	}
+
+	function iconButton(icon, label) {
+		return `<button type="button" class="inline-flex text-inherit opacity-70 transition-opacity hover:opacity-100" aria-label="${label}"><i data-lucide="${icon}" class="h-4 w-4"></i></button>`;
+	}
+
+	function renderHead() {
+		headEl.innerHTML = `<tr>${COLUMNS.map(
+			(col) =>
+				`<th scope="col"><div class="labelWrapper whitespace-nowrap"><span class="mono">${col.name}</span>${
+					SORTABLE.has(col.name)
+						? iconButton("chevrons-up-down", `Sort by ${col.name}`) +
+							iconButton("filter", `Filter by ${col.name}`)
+						: ""
+				}</div></th>`,
+		).join("")}</tr>`;
+		footCell.colSpan = COLUMNS.length;
+	}
+
+	function renderRows() {
+		const state = root.dataset.state;
+		const slice = RECORDS.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+		rowsEl.innerHTML = slice
+			.map((rec) => {
+				const selected = rec[RECORD_ID] === selectedId;
+				const cls = [
+					state !== "view" ? "cursor-pointer" : "",
+					selected ? "outline outline-2 -outline-offset-2 outline-primary" : "",
+				]
+					.filter(Boolean)
+					.join(" ");
+				return `<tr data-id="${rec[RECORD_ID]}" class="${cls}">${COLUMNS.map(
+					(col) =>
+						`<td data-parent="${col.name}" class="mono whitespace-nowrap">${show(rec[col.name])}</td>`,
+				).join("")}</tr>`;
+			})
+			.join("");
+	}
+
+	function pageButton(label, target, { active = false, disabled = false } = {}) {
+		return `<button type="button" class="pkts-button pkts-small ${active ? "pkts-primary" : "pkts-secondary"}" data-page="${target}"${disabled ? " disabled" : ""}>${label}</button>`;
+	}
+
+	function renderPager() {
+		const total = Math.max(1, Math.ceil(RECORDS.length / PAGE_SIZE));
+		page = Math.min(page, total);
+		// Packets sets display:table-footer-group on tfoot, which outranks .hidden.
+		footEl.style.display = total <= 1 ? "none" : "";
+		// The table is far wider than its scroll container, so a centred pager
+		// would sit off-screen; pin it to the visible width instead.
+		pagerEl.classList.add("sticky", "left-0");
+		pagerEl.style.width = `${tableWrap.clientWidth}px`;
+		if (total <= 1) {
+			pagerEl.innerHTML = "";
+			return;
+		}
+		const parts = [pageButton("Prev", page - 1, { disabled: page === 1 })];
+		let prev = 0;
+		for (const n of [...new Set([1, page, total])].sort((a, b) => a - b)) {
+			if (n - prev > 1) parts.push(`<span class="px-1">…</span>`);
+			parts.push(pageButton(String(n), n, { active: n === page }));
+			prev = n;
+		}
+		parts.push(pageButton("Next", page + 1, { disabled: page === total }));
+		pagerEl.innerHTML = parts.join("");
+	}
+
+	function renderEditor(rec) {
+		fieldsEl.innerHTML = COLUMNS.filter((col) => !RESERVED.has(col.name))
+			.map((col) => {
+				const value = rec[col.name];
+				if (col.type === "Bool") {
+					return `<label class="flex items-center gap-3 text-base"><input type="checkbox" name="${col.name}" ${value ? "checked" : ""} class="h-5 w-5" /><span class="mono">${col.name}</span></label>`;
+				}
+				return `<div class="flex flex-col gap-1"><label for="f-${col.name}" class="label-1 mono text-secondary">${col.name}</label><div class="pkts-input-text"><input id="f-${col.name}" name="${col.name}" value="${show(value).replace(/"/g, "&quot;")}" /></div></div>`;
+			})
+			.join("");
+	}
+
+	function render() {
+		renderRows();
+		renderPager();
+		if (window.lucide) window.lucide.createIcons();
+	}
+
+	function currentEdits(rec) {
+		const data = new FormData(editorEl);
+		return COLUMNS.filter((col) => !RESERVED.has(col.name)).flatMap((col) => {
+			const before = show(rec[col.name]);
+			const after =
+				col.type === "Bool" ? String(data.has(col.name)) : (data.get(col.name) ?? "");
+			return before === after
+				? []
+				: [
+						{
+							key: rec[RECORD_ID],
+							column: col.name,
+							original: before || "—",
+							changed: after || "—",
+						},
+					];
+		});
+	}
+
+	document.getElementById("records-edit").addEventListener("click", () => setState("choose"));
+	document.getElementById("records-cancel").addEventListener("click", () => setState("view"));
+
+	rowsEl.addEventListener("click", (event) => {
+		const row = event.target.closest("tr[data-id]");
+		if (!row || root.dataset.state === "view") return;
+		selectedId = row.dataset.id;
+		renderEditor(RECORDS.find((r) => r[RECORD_ID] === selectedId));
+		root.dataset.state = "edit";
+		root.querySelectorAll("[data-only]").forEach((el) => {
+			el.style.display = el.dataset.only === "edit" ? "" : "none";
+		});
+		tableWrap.classList.add("max-w-[50%]");
+		render();
+	});
+
+	pagerEl.addEventListener("click", (event) => {
+		const button = event.target.closest("[data-page]");
+		if (!button || button.disabled) return;
+		page = Number(button.dataset.page);
+		render();
+	});
+
+	// Save → confirm modal with the diff → (one PUT per record, once the API is
+	// wired) → back to view. Records are saved one at a time by team decision.
+	editorEl.addEventListener("submit", (event) => {
+		event.preventDefault();
+		const rec = RECORDS.find((r) => r[RECORD_ID] === selectedId);
+		const rows = currentEdits(rec);
+		if (!rows.length) {
+			setState("view");
+			return;
+		}
+		window.openConfirmModal({
+			title: `Are you sure you want to change content for ${rec[RECORD_ID]}?`,
+			rows,
+			onConfirm: () => setState("view"),
+		});
+	});
+
+	renderHead();
+	setState("view");
+</script>
