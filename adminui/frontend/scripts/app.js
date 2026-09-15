@@ -21,6 +21,7 @@ const ROUTES = {
 	"/define-pipeline": "/pages/define-pipelines.html",
 	"/tables": "/pages/tables.html",
 	"/pipelines": "/pages/pipelines.html",
+	"/pipeline-details": "/pages/pipeline-detail.html",
 };
 
 document.addEventListener("htmx:afterSwap", () => {
