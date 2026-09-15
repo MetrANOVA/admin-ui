@@ -1,0 +1,273 @@
+<section class="flex flex-col items-center gap-4 px-16 pt-[28px] pb-[88px]">
+	<div class="flex w-full max-w-[1348px] flex-col items-center gap-6">
+		<div class="relative flex w-full items-center justify-center">
+			<a
+				href="/pipelines"
+				hx-get="/pages/pipelines.html"
+				hx-target="#main-content"
+				hx-push-url="/pipelines"
+				class="absolute left-0 inline-flex h-10 w-10 items-center justify-center rounded-full bg-copy text-surface1"
+				aria-label="Back to Pipelines"
+			>
+				<i data-lucide="corner-up-left" class="h-5 w-5"></i>
+			</a>
+		</div>
+
+		<div class="pkts-card flex w-full flex-col gap-8 rounded-[18px] px-10 py-8">
+			<div class="flex items-center justify-center gap-3">
+				<i data-lucide="workflow" class="h-8 w-8 shrink-0 text-copy"></i>
+				<h1 class="h1 display2" id="pipeline-title">…</h1>
+			</div>
+
+			<!--
+				The mockup labels these Consumer Type / Consumer Config and draws
+				IF/THEN mapping rules — that is the older transformer schema. The API's
+				transformer has definition_ref, match_field and ordered columns (target,
+				match_value, operation, config), so the fields below follow that and keep
+				the mockup's grouping.
+			-->
+			<dl class="grid grid-cols-1 gap-x-12 gap-y-5 md:grid-cols-2" id="pipeline-facts">
+				<div>
+					<dt class="label text-copy">Table Name</dt>
+					<dd class="text-base text-copy" data-fact="definition_ref"></dd>
+				</div>
+				<div>
+					<dt class="label text-copy">Pipeline Name</dt>
+					<dd class="text-base text-copy" data-fact="name"></dd>
+				</div>
+				<div class="md:col-span-2">
+					<dt class="label text-copy">Description</dt>
+					<dd class="max-w-prose text-base text-copy" data-fact="description"></dd>
+				</div>
+				<div>
+					<dt class="label text-copy">Type</dt>
+					<dd class="mt-1" data-fact="type"></dd>
+				</div>
+				<div>
+					<dt class="label text-copy">Match Field</dt>
+					<dd class="text-base text-copy" data-fact="match_field"></dd>
+				</div>
+			</dl>
+
+			<div class="flex flex-col gap-3">
+				<p class="label text-copy">Mapping Rules</p>
+				<div class="flex flex-col gap-4 rounded-[12px] bg-surface2 p-4" id="pipeline-rules"></div>
+			</div>
+
+			<div class="flex flex-col gap-3">
+				<p class="label text-copy">Preview</p>
+				<div class="pkts-code-block max-h-[520px] rounded-[12px] bg-surface2 text-copy">
+					<div class="pkts-code-block-top">
+						<span class="pkts-code-block-lang-chip">yaml</span>
+						<button
+							type="button"
+							id="pipeline-copy"
+							class="inline-flex text-copy-alt transition-opacity hover:opacity-70"
+							aria-label="Copy to clipboard"
+							title="Copy"
+						>
+							<i data-lucide="copy" class="h-4 w-4"></i>
+						</button>
+					</div>
+					<pre class="m-0 font-mono text-sm leading-relaxed" id="pipeline-preview"></pre>
+				</div>
+			</div>
+
+			<div class="flex justify-end">
+				<a
+					href="/define-pipeline"
+					hx-get="/pages/define-pipelines.html"
+					hx-target="#main-content"
+					hx-push-url="/define-pipeline"
+					class="pkts-button inline-flex items-center gap-2 border-tertiary bg-tertiary text-white"
+				>
+					Edit Pipeline
+					<i data-lucide="arrow-right" class="h-5 w-5"></i>
+				</a>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script type="module">
+	// Layout pass for issue #6. Shows one transformer the way GET /transformers/{id}
+	// and GET /transformers/{id}/columns/ return it. all_interfaces is the bootstrap
+	// example from the API repo; the rest are placeholders so the list has
+	// something to open. ?id= picks the pipeline; unknown ids fall back to the
+	// first one.
+	const TYPES = {
+		data: { label: "Data Table", icon: "table-2" },
+		metadata: { label: "Metadata Table", icon: "file-json" },
+	};
+
+	const OPERATIONS = {
+		field: "Copy field",
+		static: "Static value",
+		concat: "Concatenate",
+		regex_extract: "Regex extract",
+		regex_replace: "Regex replace",
+		translate: "Translate",
+		postfix: "Postfix expression",
+		cache_lookup: "Cache lookup",
+	};
+
+	const column = (id, target_column, match_value, operation, config, order) => ({
+		id,
+		target_column,
+		match_value,
+		operation,
+		config,
+		order,
+	});
+
+	const PIPELINES = {
+		all_interfaces: {
+			id: "all_interfaces",
+			name: "all_interfaces",
+			definition_ref: "def_interface",
+			description: "Interface Traffic transformers",
+			match_field: "protocol",
+			columns: [
+				column("inUcast_field", "inUcast", "snmp", "field", { source: "SNMP_IF-MIB::ifHCInUcastPkts" }, 1),
+				column("outUcast_field", "outUcast", "snmp", "field", { source: "SNMP_IF-MIB::ifHCOutUcastPkts" }, 2),
+				column("inerror_field", "inerror", "snmp", "field", { source: "SNMP_IF-MIB::ifInErrors" }, 3),
+				column("outerror_field", "outerror", "snmp", "field", { source: "SNMP_IF-MIB::ifOutErrors" }, 4),
+				column("input_field", "input", "snmp", "postfix", { field: "SNMP_IF-MIB::ifHCInOctets", expression: "value 8 *", cast: "int" }, 5),
+				column("output_field", "output", "snmp", "postfix", { field: "SNMP_IF-MIB::ifHCOutOctets", expression: "value 8 *", cast: "int" }, 6),
+			],
+		},
+		meta_interface: {
+			id: "meta_interface",
+			name: "meta_interface",
+			definition_ref: "meta_interface",
+			description: "Interface metadata from ESDB, keyed by device and port",
+			match_field: "source",
+			columns: [
+				column("device_field", "device_id", "esdb", "regex_extract", { source: "name", regex: "^([^:]+)::", group: 1 }, 1),
+				column("port_field", "port", "esdb", "regex_extract", { source: "name", regex: "::(.+)$", group: 1 }, 2),
+				column("speed_field", "speed", "esdb", "postfix", { field: "if_speed_mbps", expression: "value 1000000 *", cast: "int" }, 3),
+				column("edge_field", "edge", "esdb", "translate", { source: "role", map: { customer: "true", peer: "true" }, default: "false" }, 4),
+			],
+		},
+	};
+
+	const params = new URLSearchParams(window.location.search);
+	const requested = params.get("id");
+	const pipeline =
+		PIPELINES[requested] ||
+		Object.assign({}, PIPELINES.all_interfaces, requested ? { id: requested, name: requested } : {});
+	const type = pipeline.definition_ref.startsWith("meta_") ? "metadata" : "data";
+
+	document.getElementById("pipeline-title").textContent = pipeline.name;
+
+	for (const dd of document.querySelectorAll("[data-fact]")) {
+		const key = dd.dataset.fact;
+		if (key === "type") {
+			const { label, icon } = TYPES[type];
+			dd.innerHTML = `<span class="pkts-chip cursor-default"><i data-lucide="${icon}" class="h-4 w-4"></i>${label}</span>`;
+		} else {
+			dd.textContent = pipeline[key] || "—";
+		}
+	}
+
+	// The IF/THEN line is the mockup's reading of a column: the transformer
+	// applies when match_field equals the column's match_value, then the
+	// operation's source lands in target_column.
+	function ruleCard(col, index) {
+		const source = col.config.source ?? col.config.field ?? col.config.fields?.join(", ") ?? "—";
+		const configRows = Object.entries(col.config)
+			.map(
+				([key, value]) => `
+					<div class="flex gap-2">
+						<span class="w-28 shrink-0 text-copy-alt">${key}</span>
+						<code>${typeof value === "string" ? value : JSON.stringify(value)}</code>
+					</div>
+				`,
+			)
+			.join("");
+		return `
+			<article class="flex flex-col gap-4 rounded-[10px] border border-dashed border-copy-alt bg-surface1 p-5">
+				<span class="pkts-chip pkts-outline cursor-default self-start border-tertiary text-tertiary">Rule ${index + 1}</span>
+				<div class="grid grid-cols-[3.5rem_1fr_1fr_1fr] items-end gap-x-6 gap-y-3 text-base text-copy">
+					<span class="font-semibold">IF</span>
+					<span><span class="block label text-copy-alt">Field</span>${pipeline.match_field}</span>
+					<span><span class="block label text-copy-alt">Operator</span>=</span>
+					<span><span class="block label text-copy-alt">Value</span>${col.match_value}</span>
+					<span class="font-semibold">THEN</span>
+					<span><span class="block label text-copy-alt">Source</span>${source}</span>
+					<span class="font-semibold">TO</span>
+					<span><span class="block label text-copy-alt">Column</span>${col.target_column}</span>
+				</div>
+				<div class="flex flex-col gap-2">
+					<p class="label text-copy">Transform</p>
+					<div class="flex flex-col gap-1 pl-4 text-sm text-copy">
+						<div class="flex gap-2">
+							<span class="w-28 shrink-0 text-copy-alt">operation</span>
+							<span>${OPERATIONS[col.operation] || col.operation} <code>${col.operation}</code></span>
+						</div>
+						${configRows}
+					</div>
+				</div>
+			</article>
+		`;
+	}
+
+	const columns = [...pipeline.columns].sort((a, b) => a.order - b.order);
+	document.getElementById("pipeline-rules").innerHTML = columns.map(ruleCard).join("");
+
+	// Same shape as bootstrap/transformers/*.yaml in the API repo.
+	function toYaml(p) {
+		const lines = [
+			"transformers:",
+			`  ${p.id}:`,
+			`    definition_id: ${p.definition_ref}`,
+			`    description: ${p.description}`,
+			`    match_field: ${p.match_field}`,
+			"    columns:",
+		];
+		for (const col of columns) {
+			lines.push(`      ${col.id}:`);
+			lines.push(`        target_column: ${col.target_column}`);
+			lines.push(`        match_value: ${col.match_value}`);
+			lines.push(`        operation: ${col.operation}`);
+			lines.push("        config:");
+			for (const [key, value] of Object.entries(col.config)) {
+				if (value && typeof value === "object") {
+					lines.push(`          ${key}:`);
+					for (const [k, v] of Object.entries(value)) {
+						lines.push(`            ${k}: ${v}`);
+					}
+				} else {
+					lines.push(`          ${key}: ${value}`);
+				}
+			}
+		}
+		return lines.join("\n");
+	}
+
+	const previewEl = document.getElementById("pipeline-preview");
+	previewEl.textContent = toYaml(pipeline);
+
+	document.getElementById("pipeline-copy").addEventListener("click", async (event) => {
+		const button = event.currentTarget;
+		try {
+			await navigator.clipboard.writeText(previewEl.textContent);
+			button.innerHTML = `<i data-lucide="check" class="h-4 w-4"></i>`;
+		} catch {
+			button.innerHTML = `<i data-lucide="x" class="h-4 w-4"></i>`;
+		}
+		if (window.lucide) {
+			window.lucide.createIcons();
+		}
+		setTimeout(() => {
+			button.innerHTML = `<i data-lucide="copy" class="h-4 w-4"></i>`;
+			if (window.lucide) {
+				window.lucide.createIcons();
+			}
+		}, 1500);
+	});
+
+	if (window.lucide) {
+		window.lucide.createIcons();
+	}
+</script>
