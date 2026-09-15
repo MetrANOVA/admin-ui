@@ -4,7 +4,20 @@
 	data-state="view"
 >
 	<div class="flex w-full max-w-[1348px] flex-col items-center gap-6">
-		<h1 class="h1 display2" id="records-title">meta_interface</h1>
+		<div class="relative flex w-full items-center justify-center">
+			<a
+				href="/metadata-manager"
+				hx-get="/pages/manage-metadata.html"
+				hx-target="#main-content"
+				hx-push-url="/metadata-manager"
+				class="absolute left-0 inline-flex h-10 w-10 items-center justify-center rounded-full bg-copy text-surface1"
+				aria-label="Back to Metadata Manager"
+				data-only="view"
+			>
+				<i data-lucide="corner-up-left" class="h-5 w-5"></i>
+			</a>
+			<h1 class="h1 display2" id="records-title">meta_interface</h1>
+		</div>
 
 		<div class="pkts-card flex w-full flex-col gap-4 rounded-[18px]">
 			<p class="text-base text-copy-alt" data-only="choose">Choose a row to edit</p>
@@ -30,9 +43,8 @@
 				<!--
 					Edit panel. Drawn as a side panel on the same page, which differs from
 					Johanna's comment #62 (a separate page) — flagged on issue #3.
-					Save/Cancel are not in the mockup; the panel is cut off there. They are
-					here because a form without them can't be judged, and Save feeds the
-					confirm modal, which is drawn.
+					Save/Cancel sit below the panel, inside the card, as drawn in the
+					final mockups; Save feeds the confirm modal.
 				-->
 				<form
 					class="flex w-[46%] shrink-0 flex-col gap-4 rounded-[12px] bg-surface2 p-6"
@@ -43,24 +55,27 @@
 						class="flex max-h-[560px] flex-col gap-4 overflow-y-auto pr-2"
 						id="records-fields"
 					></div>
-					<div class="flex justify-end gap-3 pt-2">
-						<button
-							type="button"
-							id="records-cancel"
-							class="pkts-button inline-flex items-center gap-2 border-copy bg-copy text-surface1"
-						>
-							<i data-lucide="x" class="h-5 w-5"></i>
-							Cancel
-						</button>
-						<button
-							type="submit"
-							class="pkts-button inline-flex items-center gap-2 border-success bg-success text-white"
-						>
-							<i data-lucide="save" class="h-5 w-5"></i>
-							Save
-						</button>
-					</div>
 				</form>
+			</div>
+
+			<!-- Drawn below the panel, inside the card; Save submits the editor via form= -->
+			<div class="flex justify-end gap-3" data-only="edit">
+				<button
+					type="button"
+					id="records-cancel"
+					class="pkts-button inline-flex items-center gap-2 border-copy bg-copy text-surface1"
+				>
+					<i data-lucide="x" class="h-5 w-5"></i>
+					Cancel
+				</button>
+				<button
+					type="submit"
+					form="records-editor"
+					class="pkts-button inline-flex items-center gap-2 border-success bg-success text-white"
+				>
+					<i data-lucide="save" class="h-5 w-5"></i>
+					Save
+				</button>
 			</div>
 		</div>
 
@@ -68,9 +83,10 @@
 			<button
 				type="button"
 				id="records-edit"
-				class="pkts-button border-tertiary bg-tertiary text-white"
+				class="pkts-button inline-flex items-center gap-2 border-tertiary bg-tertiary text-white"
 			>
 				Edit Metadata
+				<i data-lucide="arrow-right" class="h-5 w-5"></i>
 			</button>
 		</div>
 	</div>
@@ -379,7 +395,7 @@
 		// The table is far wider than its scroll container, so a centred pager
 		// would sit off-screen; pin it to the visible width instead.
 		pagerEl.classList.add("sticky", "left-0");
-		pagerEl.style.width = `${tableWrap.clientWidth}px`;
+		fitPager();
 		if (total <= 1) {
 			pagerEl.innerHTML = "";
 			return;
@@ -406,6 +422,13 @@
 			})
 			.join("");
 	}
+
+	// Keeps the pager as wide as the visible part of the table, and follows
+	// the container when the window or the side panel changes its width.
+	function fitPager() {
+		pagerEl.style.width = `${tableWrap.clientWidth}px`;
+	}
+	new ResizeObserver(fitPager).observe(tableWrap);
 
 	function render() {
 		renderRows();
