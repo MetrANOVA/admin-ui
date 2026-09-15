@@ -5,35 +5,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Final colour tokens from Figma (Exploration → FINAL COLOR, Frame 19/20).
+   background is the page, surface-1 cards and modals, surface-2 panels and
+   inputs, surface-menu the side nav. tertiary is not in the token list but the
+   orange action buttons are drawn, so it stays. */
 :root {
-	--background: #9fc9d2;
-	--surface-1: #fafaf0;
-	--surface-2: #a5b3b7;
-	--surface-3: #ffffff;
-	--copy: #252f30;
+	--background: #fafaf0;
+	--surface-1: #b0cad0;
+	--surface-2: #e1eff2;
+	--surface-menu: #9fc9d2;
+	--form-stroke: #4e45bb;
+	--copy: #292430;
 	--copy-alt: #4d595d;
-	--primary: #45a9bf;
-	--secondary: #345f68;
+	--menu-active: #305763;
+	--primary: #3094ab;
+	--secondary: #305763;
 	--tertiary: #da8f53;
-	--success: #00960a;
+	--success: #0b730b;
+	--error: #a6111b;
 }
 
 /* Dark-mode tokens */
 [data-theme="dark"] {
-	--background: #252f30;
-	--surface-1: #214148;
-	--surface-2: #292430;
-	--surface-3: #000000;
+	--background: #052124;
+	--surface-1: #2a2f34;
+	--surface-2: #3b464e;
+	--surface-menu: #2a2f34;
+	--form-stroke: #19191a;
 	--copy: #fafaf0;
 	--copy-alt: #a5b3b7;
+	--menu-active: #45a9bf;
 	--primary: #45a9bf;
 	--secondary: #9fc9d2;
 	--tertiary: #bf7f45;
-	--success: #00960a;
+	--success: #11ad2b;
+	--error: #ff656f;
 }
 
 body {
-	background-color: var(--surface-1);
+	background-color: var(--background);
 	background-image: url("/assets/page-background-light.png");
 	background-size: cover;
 	background-position: right center;
@@ -49,6 +59,12 @@ body {
 
 .nav-link-active {
 	color: var(--primary);
+}
+
+/* Packets paints cards white (light) and near-black (dark); the mockups use
+   surface-1 for cards, modals and detail panels in both themes. */
+.packets .pkts-card {
+	background-color: var(--surface-1);
 }
 
 /* Packets underlines all <a> tags by default; we use <a> for whole nav
