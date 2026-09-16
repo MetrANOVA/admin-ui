@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en" class="packets">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Login – MetrANOVA Admin</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Hanuman:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+		/>
+		<link rel="stylesheet" href="/styles/output.css" />
+		<script src="https://unpkg.com/lucide@latest"></script>
+		<script>
+			(function () {
+				var theme = localStorage.getItem("theme") || "light";
+				var html = document.documentElement;
+				html.setAttribute("data-theme", theme);
+				html.classList.toggle("dark", theme === "dark");
+				html.classList.toggle("light", theme === "light");
+			})();
+		</script>
+	</head>
+	<body class="font-sans">
+		<!--
+			Login stands outside the app shell (no nav), as drawn. It talks to the
+			mock API's /auth routes (issue #8); with no users configured there, auth
+			is off and this page just sends you on.
+		-->
+		<main class="flex min-h-screen flex-col items-center justify-center gap-10 px-4 py-12">
+			<img
+				src="/assets/metranova-logo-light.png"
+				alt="MetrANOVA"
+				class="block h-16 w-auto dark:hidden"
+			/>
+			<img
+				src="/assets/metranova-logo-dark.png"
+				alt="MetrANOVA"
+				class="hidden h-16 w-auto dark:block"
+			/>
+
+			<form
+				id="login-form"
+				class="flex w-full max-w-[480px] flex-col gap-6 rounded-[12px] bg-surface1 px-8 py-10 shadow-[0px_2px_1.5px_rgba(0,0,0,0.4)]"
+				novalidate
+			>
+				<h1 class="h2 text-center text-copy">Login</h1>
+
+				<div class="flex flex-col gap-1">
+					<label class="label text-copy" for="login-username">Username</label>
+					<label class="pkts-input-text w-full">
+						<input
+							id="login-username"
+							name="username"
+							type="text"
+							autocomplete="username"
+							placeholder="jlee@es.net"
+							required
+							autofocus
+						/>
+					</label>
+				</div>
+
+				<div class="flex flex-col gap-1">
+					<label class="label text-copy" for="login-password">Password</label>
+					<label class="pkts-input-text w-full">
+						<input
+							id="login-password"
+							name="password"
+							type="password"
+							autocomplete="current-password"
+							placeholder="Enter Password"
+							required
+						/>
+						<div class="action-buttons">
+							<button
+								type="button"
+								id="login-toggle-password"
+								class="inline-flex text-copy-alt hover:text-copy"
+								aria-label="Show password"
+								aria-pressed="false"
+							>
+								<i data-lucide="eye-off" class="h-5 w-5"></i>
+							</button>
+						</div>
+					</label>
+				</div>
+
+				<label class="flex items-center gap-3 text-base text-copy">
+					<input
+						id="login-remember"
+						name="remember"
+						type="checkbox"
+						class="h-5 w-5 rounded border-copy-alt accent-primary"
+					/>
+					Remember Me
+				</label>
+
+				<p id="login-error" class="text-sm text-red-700 dark:text-red-400" role="alert" style="display: none"></p>
+
+				<!-- Packets restyles .pkts-button in dark mode with more specificity than a utility, hence the ! modifiers -->
+				<div class="flex flex-col gap-3">
+					<button
+						type="submit"
+						id="login-submit"
+						class="pkts-button w-full rounded-full !border-copy !bg-copy !text-background"
+					>
+						Login
+					</button>
+					<!-- Drawn in the mockup; there is nothing behind it yet. -->
+					<button
+						type="button"
+						class="pkts-button w-full rounded-full !border-primary !bg-primary !text-white opacity-60"
+						disabled
+						title="Not available yet"
+					>
+						Create Account
+					</button>
+				</div>
+			</form>
+		</main>
+
+		<script>
+			window.ADMINUI_API_BASE = window.ADMINUI_API_BASE || "http://localhost:8000/api";
+			// Where to go after login when nothing better is asked for. The test
+			// server injects a different value, as it does for the API base.
+			window.ADMINUI_HOME = window.ADMINUI_HOME || "/";
+		</script>
+		<script type="module">
+			const form = document.getElementById("login-form");
+			const usernameEl = document.getElementById("login-username");
+			const passwordEl = document.getElementById("login-password");
+			const rememberEl = document.getElementById("login-remember");
+			const errorEl = document.getElementById("login-error");
+			const submitEl = document.getElementById("login-submit");
+			const toggleEl = document.getElementById("login-toggle-password");
+
+			// Only same-site paths; never bounce to another host.
+			function nextUrl() {
+				const next = new URLSearchParams(window.location.search).get("next") || "";
+				return next.startsWith("/") && !next.startsWith("//") ? next : window.ADMINUI_HOME;
+			}
+
+			function showError(message) {
+				errorEl.textContent = message;
+				errorEl.style.display = message ? "" : "none";
+			}
+
+			toggleEl.addEventListener("click", () => {
+				const reveal = passwordEl.type === "password";
+				passwordEl.type = reveal ? "text" : "password";
+				toggleEl.setAttribute("aria-pressed", String(reveal));
+				toggleEl.setAttribute("aria-label", reveal ? "Hide password" : "Show password");
+				toggleEl.innerHTML = `<i data-lucide="${reveal ? "eye" : "eye-off"}" class="h-5 w-5"></i>`;
+				window.lucide?.createIcons();
+			});
+
+			form.addEventListener("submit", async (event) => {
+				event.preventDefault();
+				showError("");
+				if (!usernameEl.value.trim() || !passwordEl.value) {
+					showError("Enter your username and password.");
+					return;
+				}
+				submitEl.disabled = true;
+				try {
+					const response = await fetch(`${window.ADMINUI_API_BASE}/auth/login`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						credentials: "include",
+						body: JSON.stringify({
+							username: usernameEl.value.trim(),
+							password: passwordEl.value,
+							remember: rememberEl.checked,
+						}),
+					});
+					if (!response.ok) {
+						const body = await response.json().catch(() => ({}));
+						showError(body.detail || "Login failed.");
+						return;
+					}
+					window.location.replace(nextUrl());
+				} catch {
+					showError("Cannot reach the API.");
+				} finally {
+					submitEl.disabled = false;
+				}
+			});
+
+			// Already logged in, or auth switched off: nothing to do here.
+			fetch(`${window.ADMINUI_API_BASE}/auth/me`, { credentials: "include" })
+				.then((response) => {
+					if (response.ok) {
+						window.location.replace(nextUrl());
+					}
+				})
+				.catch(() => {});
+
+			window.lucide?.createIcons();
+		</script>
+	</body>
+</html>
