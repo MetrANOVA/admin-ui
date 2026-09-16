@@ -19,6 +19,8 @@ STATIC_ROUTES = (
     "/app",
     "/scripts",
     "/styles",
+    "/form_schemas",
+    "/components",
     "/assets",
 )
 
