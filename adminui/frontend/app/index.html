@@ -7,14 +7,22 @@
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=Signika:wght@300..700&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap"
 			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Hanuman:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
 		/>
 		<!-- output.css bundles both the Packets Design System and our own
 		 Tailwind utilities for anything not yet migrated to .pkts- classes. -->
 		<link rel="stylesheet" href="/styles/output.css" />
 		<script src="https://unpkg.com/htmx.org@2.0.4"></script>
 		<script src="https://unpkg.com/lucide@latest"></script>
+		<script
+			src="https://unpkg.com/jsonforms-esm@3.7.0/dist/jsonforms.esm.js"
+			type="module"
+		></script>
+		<script type="module" src="/scripts/customRenderer.js"></script>
+		<script src="/components/index.js" type="module"></script>
+		<link rel="stylesheet" href="/styles/components.css" />
+
 		<script>
 			(function () {
 				var theme = localStorage.getItem("theme") || "light";
