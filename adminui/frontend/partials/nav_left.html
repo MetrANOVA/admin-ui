@@ -1,145 +1,187 @@
 <nav
-	class="flex h-full w-80 shrink-0 flex-col gap-12 bg-background px-6 py-12 shadow-[0px_2px_1.5px_rgba(0,0,0,0.4)] dark:bg-surface1"
+	aria-label="Primary navigation"
+	class="flex h-full w-max min-w-max shrink-0 flex-col bg-surface-menu px-6 py-12 font-sans shadow-[0_2px_1.5px_rgba(0,0,0,0.4)]"
 >
+	<!-- Logo -->
 	<a
 		href="/"
 		hx-get="/pages/home.html"
 		hx-target="#main-content"
 		hx-push-url="/"
 		aria-label="Go to homepage"
-		class="flex items-center"
+		class="flex w-full items-center justify-center px-4"
 	>
 		<img
-			src="/assets/metranova-logo-light.png"
+			src="/assets/metranova-clock-light.svg"
 			alt="MetrANOVA"
-			class="block w-auto dark:hidden"
+			class="block h-auto w-48 dark:hidden"
 		/>
+
 		<img
-			src="/assets/metranova-logo-dark.png"
+			src="/assets/metranova-clock-dark.svg"
 			alt="MetrANOVA"
-			class="hidden w-auto dark:block"
+			class="hidden h-auto w-48 dark:block"
 		/>
 	</a>
 
-	<div class="flex flex-1 flex-col gap-6 overflow-hidden">
-		<div class="flex flex-col gap-4">
-			<p class="label-1 mono text-secondary">Actions</p>
-			<div class="flex gap-4">
-				<div class="w-1 shrink-0 rounded bg-copy-alt"></div>
-				<ul class="flex flex-col gap-2">
-					<li>
-						<a
-							href="/define-table"
-							data-nav-link
-							hx-get="/pages/clickhouse-table.html"
-							hx-target="#main-content"
-							hx-push-url="/define-table"
-							class="flex items-center gap-2 px-2 py-1 text-base tracking-[-0.18px] text-copy hover:text-primary"
-							><span
-								data-nav-dot
-								class="hidden h-4 w-4 shrink-0 rounded-full bg-primary"
-							></span
-							>Define Clickhouse Table</a
-						>
-					</li>
-					<li>
-						<a
-							href="/metadata-manager"
-							data-nav-link
-							hx-get="/pages/manage-metadata.html"
-							hx-target="#main-content"
-							hx-push-url="/metadata-manager"
-							class="flex items-center gap-2 px-2 py-1 text-base tracking-[-0.18px] text-copy hover:text-primary"
-							><span
-								data-nav-dot
-								class="hidden h-4 w-4 shrink-0 rounded-full bg-primary"
-							></span
-							>Metadata Manager</a
-						>
-					</li>
-					<li>
-						<a
-							href="/define-pipeline"
-							data-nav-link
-							hx-get="/pages/define-pipelines.html"
-							hx-target="#main-content"
-							hx-push-url="/define-pipeline"
-							class="flex items-center gap-2 px-2 py-1 text-base tracking-[-0.18px] text-copy hover:text-primary"
-							><span
-								data-nav-dot
-								class="hidden h-4 w-4 shrink-0 rounded-full bg-primary"
-							></span
-							>Define Pipelines</a
-						>
-					</li>
-				</ul>
-			</div>
-		</div>
+	<!-- Navigation -->
+	<div class="mt-8 flex min-h-0 w-full flex-1 flex-col gap-4">
+		<!-- Actions -->
+		<section class="w-full border-t-2 border-copy-alt pt-1">
+			<p class="pb-2 pt-1 px-0 text-[12px] font-normal leading-4 text-copy-alt">Action</p>
 
-		<div class="flex flex-col gap-4">
-			<p class="label-1 mono text-secondary">Library</p>
-			<div class="flex gap-4">
-				<div class="w-1 shrink-0 rounded bg-copy-alt"></div>
-				<ul class="flex flex-col gap-2">
-					<li>
-						<a
-							href="/tables"
-							data-nav-link
-							hx-get="/pages/tables.html"
-							hx-target="#main-content"
-							hx-push-url="/tables"
-							class="flex items-center gap-2 px-2 py-1 text-base tracking-[-0.18px] text-copy hover:text-primary"
-							><span
-								data-nav-dot
-								class="hidden h-4 w-4 shrink-0 rounded-full bg-primary"
-							></span
-							>Clickhouse Tables</a
-						>
-					</li>
-					<li>
-						<a
-							href="/pipelines"
-							data-nav-link
-							hx-get="/pages/pipelines.html"
-							hx-target="#main-content"
-							hx-push-url="/pipelines"
-							class="flex items-center gap-2 px-2 py-1 text-base tracking-[-0.18px] text-copy hover:text-primary"
-							><span
-								data-nav-dot
-								class="hidden h-4 w-4 shrink-0 rounded-full bg-primary"
-							></span
-							>Pipelines</a
-						>
-					</li>
-				</ul>
-			</div>
-		</div>
+			<ul class="m-0 flex w-full list-none flex-col p-0 gap-1">
+				<li class="w-full">
+					<a
+						href="/define-table"
+						data-nav-link
+						hx-get="/pages/clickhouse-table.html"
+						hx-target="#main-content"
+						hx-push-url="/define-table"
+						class="group relative flex min-h-10 w-full items-center gap-3 whitespace-nowrap px-3 py-2 text-sm font-normal leading-5 text-copy transition-colors hover:bg-surface1 hover:text-copy active:bg-active-menu active:text-background"
+					>
+						<!-- Current-page indicator -->
+						<span
+							data-nav-dot
+							aria-hidden="true"
+							class="absolute inset-y-1.5 left-0 hidden w-0.5 rounded-full bg-active-menu"
+						></span>
 
-		<!-- TODO: Fix this -->
-		<div class="flex flex-col gap-4">
-			<p class="label-1 mono text-secondary">Settings</p>
-			<div class="flex gap-4">
-				<div class="w-1 shrink-0 rounded bg-copy-alt"></div>
-				<ul class="flex flex-col gap-2">
-					<li class="px-2 py-1 text-base tracking-[-0.18px] text-copy">Settings</li>
-				</ul>
-			</div>
-		</div>
+						<i data-lucide="table-2" aria-hidden="true" class="h-5 w-5 shrink-0"></i>
+
+						<span class="whitespace-nowrap"> Define Clickhouse Table </span>
+					</a>
+				</li>
+
+				<li class="w-full">
+					<a
+						href="/metadata-manager"
+						data-nav-link
+						hx-get="/pages/manage-metadata.html"
+						hx-target="#main-content"
+						hx-push-url="/metadata-manager"
+						class="group relative flex min-h-10 w-full items-center gap-3 whitespace-nowrap px-3 py-2 text-sm font-normal leading-5 text-copy transition-colors hover:bg-surface1 hover:text-copy active:bg-active-menu active:text-background"
+					>
+						<span
+							data-nav-dot
+							aria-hidden="true"
+							class="absolute inset-y-1.5 left-0 hidden w-0.5 rounded-full bg-active-menu"
+						></span>
+
+						<i data-lucide="file-json" aria-hidden="true" class="h-5 w-5 shrink-0"></i>
+
+						<span class="whitespace-nowrap"> Metadata Manager </span>
+					</a>
+				</li>
+
+				<li class="w-full">
+					<a
+						href="/define-pipeline"
+						data-nav-link
+						hx-get="/pages/define-pipelines.html"
+						hx-target="#main-content"
+						hx-push-url="/define-pipeline"
+						class="group relative flex min-h-10 w-full items-center gap-3 whitespace-nowrap px-3 py-2 text-sm font-normal leading-5 text-copy transition-colors hover:bg-surface1 hover:text-copy active:bg-active-menu active:text-background"
+					>
+						<span
+							data-nav-dot
+							aria-hidden="true"
+							class="absolute inset-y-1.5 left-0 hidden w-0.5 rounded-full bg-active-menu"
+						></span>
+
+						<i data-lucide="workflow" aria-hidden="true" class="h-5 w-5 shrink-0"></i>
+
+						<span class="whitespace-nowrap"> Define Pipelines </span>
+					</a>
+				</li>
+			</ul>
+		</section>
+
+		<!-- Library -->
+		<section class="mt-1 w-full border-t-2 border-copy-alt pt-1">
+			<p class="pb-2 pt-1 px-0 text-[12px] font-normal leading-4 text-copy-alt">Library</p>
+
+			<ul class="m-0 flex w-full list-none flex-col p-0 gap-1">
+				<li class="w-full">
+					<a
+						href="/tables"
+						data-nav-link
+						hx-get="/pages/tables.html"
+						hx-target="#main-content"
+						hx-push-url="/tables"
+						class="group relative flex min-h-10 w-full items-center gap-3 whitespace-nowrap px-3 py-2 text-sm font-normal leading-5 text-copy transition-colors hover:bg-surface1 hover:text-copy active:bg-active-menu active:text-background"
+					>
+						<span
+							data-nav-dot
+							aria-hidden="true"
+							class="absolute inset-y-1.5 left-0 hidden w-0.5 rounded-full bg-active-menu"
+						></span>
+
+						<i data-lucide="table-2" aria-hidden="true" class="h-5 w-5 shrink-0"></i>
+
+						<span class="whitespace-nowrap"> Clickhouse Tables </span>
+					</a>
+				</li>
+
+				<li class="w-full">
+					<a
+						href="/pipelines"
+						data-nav-link
+						hx-get="/pages/pipelines.html"
+						hx-target="#main-content"
+						hx-push-url="/pipelines"
+						class="group relative flex min-h-10 w-full items-center gap-3 whitespace-nowrap px-3 py-2 text-sm font-normal leading-5 text-copy transition-colors hover:bg-surface1 hover:text-copy active:bg-active-menu active:text-background"
+					>
+						<span
+							data-nav-dot
+							aria-hidden="true"
+							class="absolute inset-y-1.5 left-0 hidden w-0.5 rounded-full bg-active-menu"
+						></span>
+
+						<i data-lucide="workflow" aria-hidden="true" class="h-5 w-5 shrink-0"></i>
+
+						<span class="whitespace-nowrap"> Pipelines </span>
+					</a>
+				</li>
+			</ul>
+		</section>
+
+		<!-- Settings -->
+		<section class="mt-1 w-full border-t-2 border-copy-alt pt-1">
+			<ul class="m-0 w-full list-none p-0">
+				<li class="w-full">
+					<a
+						href="/settings"
+						data-nav-link
+						hx-get="/pages/settings.html"
+						hx-target="#main-content"
+						hx-push-url="/settings"
+						class="group relative flex min-h-10 w-full items-center gap-3 whitespace-nowrap px-3 py-2 text-sm font-normal leading-5 text-copy transition-colors hover:bg-surface1 hover:text-copy active:bg-active-menu active:text-background"
+					>
+						<span
+							data-nav-dot
+							aria-hidden="true"
+							class="absolute inset-y-1.5 left-0 hidden w-0.5 rounded-full bg-active-menu"
+						></span>
+
+						<i data-lucide="settings" aria-hidden="true" class="h-5 w-5 shrink-0"></i>
+
+						<span class="whitespace-nowrap"> Settings </span>
+					</a>
+				</li>
+			</ul>
+		</section>
 	</div>
 
-	<div class="flex flex-col items-start gap-4">
-		<button
-			id="theme-toggle"
-			type="button"
-			title="Switch to Dark Mode"
-			aria-label="Switch to Dark Mode"
-			class="flex h-9 w-9 items-center justify-center rounded-full border border-surface2 text-copy transition-colors hover:border-primary hover:text-primary"
-		>
-			<i data-lucide="sun" class="hidden h-5 w-5 dark:block"></i>
-			<i data-lucide="moon" class="block h-5 w-5 dark:hidden"></i>
-		</button>
-		<div class="pkts-avatar pkts-large bg-[#4ba9b3]">
-			<span>ES</span>
+	<!-- Footer -->
+	<div class="mt-auto flex w-full flex-col items-start gap-3 px-3 pt-8">
+		<!-- Theme toggle -->
+		<div id="theme-toggle" class="pkts-input-switch">
+			<input type="checkbox" />
+			<div class="indicator"></div>
 		</div>
+
+		<!-- User avatar -->
+		<div class="pkts-avatar pkts-medium pkts-grape"><span>JL</span></div>
 	</div>
 </nav>
