@@ -20,10 +20,11 @@
 	dialog ever lists changes spanning more than one record, saving has to walk
 	them sequentially and report partial success rather than fire one request.
 -->
+<!-- Not "confirm-modal": components.css (from pscompose) styles that id and would force this open. -->
 <dialog
-	id="confirm-modal"
+	id="confirm-dialog"
 	class="w-[min(1045px,calc(100vw-2rem))] rounded-[18px] border-2 border-copy bg-surface1 p-0 text-copy backdrop:bg-black/40"
-	aria-labelledby="confirm-modal-title"
+	aria-labelledby="confirm-dialog-title"
 >
 	<form method="dialog" class="flex flex-col gap-6 p-8">
 		<button
@@ -36,7 +37,7 @@
 
 		<div class="flex items-center justify-center gap-3 pr-8">
 			<i data-lucide="circle-alert" class="h-6 w-6 shrink-0"></i>
-			<h2 class="h4" id="confirm-modal-title"></h2>
+			<h2 class="h4" id="confirm-dialog-title"></h2>
 		</div>
 
 		<div class="w-full overflow-x-auto">
@@ -49,13 +50,13 @@
 						<th scope="col"><div class="labelWrapper">Changed Content</div></th>
 					</tr>
 				</thead>
-				<tbody id="confirm-modal-rows"></tbody>
-				<tfoot id="confirm-modal-foot">
+				<tbody id="confirm-dialog-rows"></tbody>
+				<tfoot id="confirm-dialog-foot">
 					<tr>
 						<td colspan="4">
 							<div
 								class="flex flex-wrap items-center justify-center gap-2"
-								id="confirm-modal-pager"
+								id="confirm-dialog-pager"
 							></div>
 						</td>
 					</tr>
@@ -73,7 +74,7 @@
 			</button>
 			<button
 				value="confirm"
-				id="confirm-modal-save"
+				id="confirm-dialog-save"
 				class="pkts-button inline-flex items-center gap-2 border-success bg-success text-white"
 			>
 				<i data-lucide="save" class="h-5 w-5"></i>
@@ -86,11 +87,11 @@
 <script type="module">
 	const PAGE_SIZE = 6;
 
-	const dialog = document.getElementById("confirm-modal");
-	const titleEl = document.getElementById("confirm-modal-title");
-	const rowsEl = document.getElementById("confirm-modal-rows");
-	const pagerEl = document.getElementById("confirm-modal-pager");
-	const footEl = document.getElementById("confirm-modal-foot");
+	const dialog = document.getElementById("confirm-dialog");
+	const titleEl = document.getElementById("confirm-dialog-title");
+	const rowsEl = document.getElementById("confirm-dialog-rows");
+	const pagerEl = document.getElementById("confirm-dialog-pager");
+	const footEl = document.getElementById("confirm-dialog-foot");
 
 	let rows = [];
 	let page = 1;
