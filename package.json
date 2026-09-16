@@ -5,10 +5,12 @@
 	"description": "MetrANOVA Admin UI",
 	"scripts": {
 		"css-build": "postcss adminui/frontend/styles/input.css -o adminui/frontend/styles/output.css",
-		"css-watch": "postcss adminui/frontend/styles/input.css -o adminui/frontend/styles/output.css --watch"
+		"css-watch": "postcss adminui/frontend/styles/input.css -o adminui/frontend/styles/output.css --watch",
+		"generate-components-index": "node ./adminui/frontend/scripts/generate-components-index.mjs"
 	},
 	"dependencies": {
-		"@esnet/packets-ui-css": "^2.0.2"
+		"@esnet/packets-ui-css": "^2.0.2",
+		"@esnet/packets-ui-web": "^2.0.2"
 	},
 	"devDependencies": {
 		"autoprefixer": "^10.5.5",
