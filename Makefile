@@ -10,7 +10,7 @@ run-api:
 
 run-frontend:
 	@echo "Starting frontend on http://localhost:5001"
-	cd adminui/frontend && python3 server.py --port=5001
+	cd adminui/frontend && npm run generate-components-index && python3 server.py --port=5001
 
 css-build:
 	npm run css-build
