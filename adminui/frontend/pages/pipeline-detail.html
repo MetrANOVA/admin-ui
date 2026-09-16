@@ -6,7 +6,7 @@
 				hx-get="/pages/pipelines.html"
 				hx-target="#main-content"
 				hx-push-url="/pipelines"
-				class="absolute left-0 inline-flex h-10 w-10 items-center justify-center rounded-full bg-copy text-surface1"
+				class="absolute left-0 inline-flex h-10 w-10 items-center justify-center rounded-full bg-copy text-background"
 				aria-label="Back to Pipelines"
 			>
 				<i data-lucide="corner-up-left" class="h-5 w-5"></i>
@@ -79,7 +79,7 @@
 					hx-get="/pages/define-pipelines.html"
 					hx-target="#main-content"
 					hx-push-url="/define-pipeline"
-					class="pkts-button inline-flex items-center gap-2 border-tertiary bg-tertiary text-white"
+					class="pkts-button inline-flex items-center gap-2 border-accent bg-accent text-white"
 				>
 					Edit Pipeline
 					<i data-lucide="arrow-right" class="h-5 w-5"></i>
@@ -187,7 +187,7 @@
 			.join("");
 		return `
 			<article class="flex flex-col gap-4 rounded-[10px] border border-dashed border-copy-alt bg-surface1 p-5">
-				<span class="pkts-chip pkts-outline cursor-default self-start border-tertiary text-tertiary">Rule ${index + 1}</span>
+				<span class="pkts-chip pkts-outline cursor-default self-start border-accent text-accent">Rule ${index + 1}</span>
 				<div class="grid grid-cols-[3.5rem_1fr_1fr_1fr] items-end gap-x-6 gap-y-3 text-base text-copy">
 					<span class="font-semibold">IF</span>
 					<span><span class="block label text-copy-alt">Field</span>${pipeline.match_field}</span>
