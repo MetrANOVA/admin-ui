@@ -1,93 +1,163 @@
-<section class="flex flex-col items-center gap-4 px-16 pt-[28px] pb-[88px]">
-	<div class="flex w-full max-w-[1348px] flex-col items-center gap-4">
-		<div class="flex w-full items-end gap-6 rounded-xl bg-tertiary px-8 py-6">
-			<h1 class="h1 display2">Admin Portal</h1>
-		</div>
+<section aria-labelledby="home-title" class="flex w-full flex-col items-center p-16">
+	<div class="flex w-full max-w-[85%] flex-col gap-8">
+		<!-- Page header -->
+		<header class="flex w-full flex-col items-end rounded-xl bg-background px-6 py-4 lg:px-8">
+			<h1
+				id="home-title"
+				class="m-0 font-display text-[48px] font-semibold leading-none tracking-tight text-copy"
+			>
+				Admin Portal
+			</h1>
 
-		<div class="flex w-full items-stretch justify-center gap-6 py-2">
+			<p class="m-0 pb-1 text-lg font-medium text-accent">Welcome Back Johanna!</p>
+		</header>
+
+		<!-- Action cards -->
+		<div class="grid w-full grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+			<!-- Define Clickhouse Table -->
 			<a
 				href="/define-table"
 				hx-get="/pages/clickhouse-table.html"
 				hx-target="#main-content"
 				hx-push-url="/define-table"
-				class="pkts-card flex min-w-0 flex-1 flex-col items-center justify-between gap-6 rounded-xl"
+				class="home-action-card group"
 			>
-				<div class="flex w-full flex-col items-start gap-2">
-					<div class="flex w-full min-w-0 items-center gap-4">
-						<i data-lucide="table-2" class="h-8 w-8 shrink-0 text-copy"></i>
-						<p class="h4 min-w-0 flex-1 text-copy">Define Clickhouse Table</p>
+				<div class="flex w-full flex-col gap-3">
+					<div class="flex min-w-0 items-center gap-4">
+						<i
+							data-lucide="table-2"
+							aria-hidden="true"
+							class="h-8 w-8 shrink-0 text-copy"
+						></i>
+
+						<h4
+							class="m-0 min-w-0 font-sans text-xl font-semibold leading-tight text-copy"
+						>
+							Define Clickhouse Table
+						</h4>
 					</div>
-					<p class="min-h-10 px-2 py-1 text-base text-copy">
+
+					<p class="m-0 leading-5 text-copy">
 						View and manage your Clickhouse database tables, schemas, and data
 						ingestion.
 					</p>
 				</div>
-				<span class="pkts-icon-button pkts-primary pkts-square">
+
+				<span class="home-action-button" aria-hidden="true">
 					<i data-lucide="arrow-right" class="h-6 w-6"></i>
 				</span>
 			</a>
 
+			<!-- Metadata Manager -->
 			<a
 				href="/metadata-manager"
 				hx-get="/pages/manage-metadata.html"
 				hx-target="#main-content"
 				hx-push-url="/metadata-manager"
-				class="pkts-card flex min-w-0 flex-1 flex-col items-center justify-between gap-6 rounded-xl"
+				class="home-action-card group"
 			>
-				<div class="flex w-full flex-col items-start gap-2">
-					<div class="flex w-full min-w-0 items-center gap-4">
-						<i data-lucide="file-json" class="h-8 w-8 shrink-0 text-copy"></i>
-						<p class="h4 min-w-0 flex-1 text-copy">Metadata Manager</p>
+				<div class="flex w-full flex-col gap-3">
+					<div class="flex min-w-0 items-center gap-4">
+						<i
+							data-lucide="file-json"
+							aria-hidden="true"
+							class="h-8 w-8 shrink-0 text-copy"
+						></i>
+
+						<h4
+							class="m-0 min-w-0 font-sans text-xl font-semibold leading-tight text-copy"
+						>
+							Metadata Manager
+						</h4>
 					</div>
-					<p class="min-h-10 px-2 py-1 text-base text-copy">
+
+					<p class="m-0 leading-5 text-copy">
 						Browse and configure metadata, table definitions, and column mappings.
 					</p>
 				</div>
-				<span class="pkts-icon-button pkts-primary pkts-square">
+
+				<span class="home-action-button" aria-hidden="true">
 					<i data-lucide="arrow-right" class="h-6 w-6"></i>
 				</span>
 			</a>
 
+			<!-- Define Pipelines -->
 			<a
 				href="/define-pipeline"
 				hx-get="/pages/define-pipelines.html"
 				hx-target="#main-content"
 				hx-push-url="/define-pipeline"
-				class="pkts-card flex min-w-0 flex-1 flex-col items-center justify-between gap-6 rounded-xl"
+				class="home-action-card group md:col-span-2 xl:col-span-1"
 			>
-				<div class="flex w-full flex-col items-start gap-2">
-					<div class="flex w-full min-w-0 items-center gap-4">
-						<i data-lucide="workflow" class="h-8 w-8 shrink-0 text-copy"></i>
-						<p class="h4 min-w-0 flex-1 text-copy">Define Pipelines</p>
+				<div class="flex w-full flex-col gap-3">
+					<div class="flex min-w-0 items-center gap-4">
+						<i
+							data-lucide="workflow"
+							aria-hidden="true"
+							class="h-8 w-8 shrink-0 text-copy"
+						></i>
+
+						<h4
+							class="m-0 min-w-0 font-sans text-xl font-semibold leading-tight text-copy"
+						>
+							Define Pipelines
+						</h4>
 					</div>
-					<p class="min-h-10 px-2 py-1 text-base text-copy">
-						Configure pipeline rules and control how your data flows through the system
+
+					<p class="m-0 leading-5 text-copy">
+						Configure pipeline rules and control how your data flows through the system.
 					</p>
 				</div>
-				<span class="pkts-icon-button pkts-primary pkts-square">
+
+				<span class="home-action-button" aria-hidden="true">
 					<i data-lucide="arrow-right" class="h-6 w-6"></i>
 				</span>
 			</a>
 		</div>
 
-		<div class="flex w-full items-stretch gap-6 py-2">
-			<div
-				class="pkts-card flex min-w-0 flex-1 flex-col items-center gap-6 overflow-hidden rounded-[18px]"
-			>
-				<p class="h5 text-copy">Recent Activities</p>
-				<table class="pkts-data-table">
-					<tbody id="recent-activities-rows"></tbody>
-				</table>
-			</div>
+		<!-- Activity panels -->
+		<div class="grid w-full grid-cols-1 items-start gap-6 xl:grid-cols-2">
+			<!-- Recent activities -->
+			<section aria-labelledby="recent-activities-title" class="home-data-panel">
+				<h5
+					id="recent-activities-title"
+					class="m-0 text-center font-sans text-base font-semibold text-copy"
+				>
+					Recent Activities
+				</h5>
 
-			<div
-				class="pkts-card flex min-w-0 flex-1 flex-col items-center gap-6 overflow-hidden rounded-[18px]"
-			>
-				<p class="h5 text-copy">Favorites</p>
-				<table class="pkts-data-table">
-					<tbody id="favorites-rows"></tbody>
-				</table>
-			</div>
+				<div class="w-full overflow-x-auto">
+					<table class="home-data-table">
+						<tbody id="recent-activities-rows">
+							<tr>
+								<td colspan="3" class="home-empty-cell">
+									Loading recent activities…
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<!-- Favorites -->
+			<section aria-labelledby="favorites-title" class="home-data-panel">
+				<h5
+					id="favorites-title"
+					class="m-0 text-center font-sans text-base font-semibold text-copy"
+				>
+					Favorites
+				</h5>
+
+				<div class="w-full overflow-x-auto">
+					<table class="home-data-table">
+						<tbody id="favorites-rows">
+							<tr>
+								<td colspan="3" class="home-empty-cell">Loading favorites…</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
 		</div>
 	</div>
 </section>
