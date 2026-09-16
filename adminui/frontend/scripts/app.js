@@ -1,3 +1,6 @@
+// import '@esnet/packets-ui-web';
+import "https://esm.sh/@esnet/packets-ui-web@2.0.2?bundle";
+
 // API base URL for the mock backend. Update this once the real API is available.
 window.ADMINUI_API_BASE = window.ADMINUI_API_BASE || "http://localhost:8000/api";
 
