@@ -5,73 +5,142 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =========================================================
+   Application tokens
+   ========================================================= */
+
 :root {
-	--background: #9fc9d2;
-	--surface-1: #fafaf0;
-	--surface-2: #a5b3b7;
-	--surface-3: #ffffff;
+	--background: #fafaf0;
+	--surface-1: #b0cad0;
+	--surface-2: #e1eff2;
+
+	--surface-menu: #9fc9d2;
+	--menu-active: #305763;
+
 	--copy: #252f30;
 	--copy-alt: #4d595d;
-	--primary: #45a9bf;
-	--secondary: #345f68;
-	--tertiary: #da8f53;
+	--shadow: #19191a;
+
+	--primary: #3094ab;
+	--secondary: #305763;
+	--accent: #f7a666;
+
 	--success: #00960a;
+	--error: #a6111b;
+
+	/*
+	 * Packets typography tokens.
+	 * These are intentionally outside @layer so they override Packets.
+	 */
+	--pkts-font-family-body-display: "Hanuman", serif;
+	--pkts-font-family-body-mono: "Source Code Pro", monospace;
+	--pkts-font-family-body-sans: "Inter", sans-serif;
+
+	--pkts-font-family-header-serif: "Hanuman", serif;
+	--pkts-font-family-header-sans: "Inter", sans-serif;
+	--pkts-font-family-header-mono: "Source Code Pro", monospace;
+	--pkts-font-family-header-display: "Hanuman", serif;
 }
 
 /* Dark-mode tokens */
 [data-theme="dark"] {
-	--background: #252f30;
-	--surface-1: #214148;
-	--surface-2: #292430;
-	--surface-3: #000000;
+	--background: #052124;
+	--surface-1: #2a2f34;
+	--surface-2: #3b464e;
+
+	--surface-menu: #2a2f34;
+	--menu-active: #45a9bf;
+
 	--copy: #fafaf0;
 	--copy-alt: #a5b3b7;
+	--shadow: #4e45bb;
+
 	--primary: #45a9bf;
 	--secondary: #9fc9d2;
-	--tertiary: #bf7f45;
+	--accent: #bf7f45;
+
 	--success: #00960a;
+	--error: #ff656f;
 }
 
-body {
-	background-color: var(--surface-1);
-	background-image: url("/assets/page-background-light.png");
-	background-size: cover;
-	background-position: right center;
-	background-repeat: no-repeat;
+/* Allow application color utilities to override Packets typography colors. */
+.packets .text-copy {
 	color: var(--copy);
-	/* Cards can overflow horizontally at narrow widths; this hides that. */
-	overflow-x: hidden;
 }
 
-[data-theme="dark"] body {
-	background-image: url("/assets/page-background-dark.png");
+.packets .text-copy-alt {
+	color: var(--copy-alt);
 }
 
-.nav-link-active {
+.packets .text-primary {
 	color: var(--primary);
 }
 
-/* Packets underlines all <a> tags by default; we use <a> for whole nav
-	 items/cards, not inline text links, so changed that. */
-a.pkts-card,
-a[data-nav-link] {
-	text-decoration: none;
+.packets .text-secondary {
+	color: var(--secondary);
 }
 
-/* Packets puts bullets on every <ul> by default; none of ours are lists. */
+.packets .text-accent {
+	color: var(--accent);
+}
+
+.packets .text-success {
+	color: var(--success);
+}
+
+.packets .text-error {
+	color: var(--error);
+}
+
+/* =========================================================
+   Base page styles
+   ========================================================= */
+
+@layer base {
+	html {
+		font-family: "Inter", sans-serif;
+	}
+
+	body {
+		min-height: 100vh;
+		background-color: var(--background);
+		background-image: url("/assets/page-background-light.svg");
+		background-position: right center;
+		background-repeat: no-repeat;
+		background-size: cover;
+		color: var(--copy);
+		overflow-x: hidden;
+	}
+
+	[data-theme="dark"] body {
+		background-image: url("/assets/page-background-dark.svg");
+	}
+
+	button,
+	input,
+	textarea,
+	select {
+		font-family: inherit;
+	}
+}
+
+/* =========================================================
+   General Packets overrides
+   ========================================================= */
+
+/* Packets puts bullets and padding on all lists. */
 .packets ul {
-	list-style: none;
+	margin: 0;
 	padding-left: 0;
+	list-style: none;
 }
 
-/* Packets puts a bottom margin on every <p> by default; zero it out. */
+/* Packets adds bottom margins to paragraphs. */
 .packets p {
 	margin: 0;
 }
 
-/* Packets forces width:100% on headings/paragraphs, which breaks the header
-	 banner's title+subtitle sizing to content in a flex row. Scoped narrowly
-	 (not .h4) since card titles need the opposite: shrink/wrap enabled. */
+/* Packets forces width: 100% on headings and paragraphs. */
 h1.h1,
 #home-welcome {
 	width: auto !important;
@@ -79,13 +148,323 @@ h1.h1,
 	margin: 0 !important;
 }
 
-/* Packets colors :visited/:hover links; ours should stay copy/primary. */
+/* Whole cards and navigation items should not be underlined. */
+a.pkts-card,
+a.pkts-card:link,
 a.pkts-card:visited,
 a.pkts-card:hover,
+a[data-nav-link],
+a[data-nav-link]:link,
+a[data-nav-link]:visited,
+a[data-nav-link]:hover {
+	text-decoration: none;
+}
+
+/* =========================================================
+   Left navigation
+   ========================================================= */
+
+a[data-nav-link],
+a[data-nav-link]:link,
 a[data-nav-link]:visited {
+	width: 100%;
+	color: var(--copy);
+	white-space: nowrap;
+}
+
+/* Lucide replaces <i> with <svg>. */
+a[data-nav-link] > i,
+a[data-nav-link] > svg {
+	flex-shrink: 0;
+	color: inherit;
+	stroke: currentColor;
+}
+
+/* Hover state */
+a[data-nav-link]:hover {
+	background-color: var(--surface-1);
 	color: var(--copy);
 }
 
-a[data-nav-link]:hover {
-	color: var(--primary);
+/* Mouse/touch pressed state */
+a[data-nav-link]:active {
+	background-color: var(--menu-active);
+	color: var(--copy);
+}
+
+/* Persistent current-route state */
+a[data-nav-link].nav-link-active,
+a[data-nav-link].nav-link-active:link,
+a[data-nav-link].nav-link-active:visited,
+a[data-nav-link].nav-link-active:hover {
+	color: var(--menu-active);
+}
+
+/* Current-route vertical indicator */
+a[data-nav-link].nav-link-active [data-nav-dot] {
+	display: block;
+	background-color: var(--menu-active);
+}
+
+/*
+ * When the current item is actively pressed, preserve the pressed
+ * background while retaining a readable foreground color.
+ */
+a[data-nav-link].nav-link-active:active {
+	background-color: var(--menu-active);
+	color: var(--background);
+}
+
+.pkts-input-switch {
+	--interaction-color: var(--primary);
+	--interaction-border: var(--secondary);
+	--interaction-shadow: var(--shadow);
+
+	background-color: var(--copy-alt);
+	border-color: var(--copy-alt);
+}
+
+/* =========================================================
+   Home page action cards
+   ========================================================= */
+
+.home-action-card,
+.home-action-card:link,
+.home-action-card:visited {
+	display: flex;
+	min-width: 0;
+	min-height: 148px;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1.5rem;
+
+	padding: 2rem 2.5rem;
+
+	border-radius: 0.75rem;
+	background-color: var(--surface-2);
+	color: var(--copy);
+	text-decoration: none;
+
+	box-shadow: 0 2px 1.5px rgb(0 0 0 / 40%);
+
+	transition:
+		background-color 150ms ease,
+		box-shadow 150ms ease,
+		color 150ms ease,
+		transform 150ms ease;
+}
+
+.home-action-card:hover {
+	background-color: var(--surface-1);
+	color: var(--copy);
+	text-decoration: none;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 4px rgb(0 0 0 / 30%);
+}
+
+.home-action-card:active {
+	background-color: var(--menu-active);
+	color: var(--copy);
+	transform: translateY(1px);
+	box-shadow: 0 1px 1px rgb(0 0 0 / 30%);
+}
+
+/* Ensure Packets does not override text inside the action cards. */
+.home-action-card h2,
+.home-action-card p,
+.home-action-card svg {
+	color: inherit;
+}
+
+.home-action-card h2,
+.home-action-card p {
+	margin: 0;
+}
+
+.home-action-card h2 {
+	width: auto;
+}
+
+.home-action-card svg {
+	stroke: currentColor;
+}
+
+/* Circular arrow button */
+.home-action-button {
+	display: flex;
+	width: 4rem;
+	height: 3rem;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+
+	border: 2px solid var(--surface-1);
+	border-radius: 9999px;
+
+	background-color: var(--primary);
+	color: var(--background);
+
+	box-shadow: 0 1px 2px rgb(0 0 0 / 25%);
+
+	transition:
+		background-color 150ms ease,
+		color 150ms ease,
+		transform 150ms ease;
+}
+
+.home-action-button svg {
+	color: inherit;
+	stroke: currentColor;
+}
+
+.home-action-card:hover .home-action-button {
+	background-color: var(--secondary);
+	transform: translateX(2px);
+}
+
+/* =========================================================
+   Home page activity panels
+   ========================================================= */
+
+.home-data-panel {
+	display: flex;
+	width: 100%;
+	min-width: 0;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+
+	padding: 2rem 2.5rem;
+
+	overflow: hidden;
+	border-radius: 0.75rem;
+
+	background-color: var(--surface-menu);
+	color: var(--copy);
+	border: var(--surface-2, 2px) solid;
+}
+
+.home-data-panel h2 {
+	width: auto;
+	margin: 0;
+	color: var(--copy);
+}
+
+/* =========================================================
+   Home page tables
+   ========================================================= */
+
+.home-data-table {
+	width: 100%;
+	border-spacing: 0;
+	border-collapse: collapse;
+
+	color: var(--copy);
+	font-family: "Inter", sans-serif;
+	font-size: 0.875rem;
+	line-height: 1.25rem;
+}
+
+.home-data-table tbody {
+	width: 100%;
+}
+
+.home-data-row {
+	background-color: var(--surface-2);
+	color: var(--copy);
+
+	transition:
+		background-color 150ms ease,
+		color 150ms ease;
+}
+
+.home-data-row:hover {
+	background-color: var(--surface-1);
+	color: var(--copy);
+}
+
+.home-data-row:active {
+	background-color: var(--menu-active);
+	color: var(--copy);
+}
+
+.home-data-table td {
+	height: 2.25rem;
+	padding: 0.375rem 0.75rem;
+	border: 0;
+
+	color: inherit;
+	vertical-align: middle;
+}
+
+.home-icon-cell {
+	width: 2.75rem;
+}
+
+.home-icon-cell svg {
+	display: block;
+	width: 1.25rem;
+	height: 1.25rem;
+
+	color: inherit;
+	stroke: currentColor;
+}
+
+.home-name-cell {
+	width: 55%;
+	text-align: left;
+	white-space: nowrap;
+}
+
+.home-time-cell {
+	text-align: right;
+	white-space: nowrap;
+}
+
+.home-empty-cell {
+	padding: 1rem !important;
+	background-color: var(--surface-2);
+	color: var(--copy-alt) !important;
+	text-align: center;
+}
+
+/* =========================================================
+   Legacy Packets card support
+
+   These rules support your original markup if any pages still use
+   class="pkts-card" rather than class="home-action-card".
+   ========================================================= */
+
+a.pkts-card,
+a.pkts-card:link,
+a.pkts-card:visited {
+	color: var(--copy);
+}
+
+a.pkts-card:hover {
+	color: var(--copy);
+}
+
+a.pkts-card svg {
+	color: inherit;
+	stroke: currentColor;
+}
+
+/* =========================================================
+   Responsive home page adjustments
+   ========================================================= */
+
+@media (max-width: 640px) {
+	.home-action-card {
+		padding-inline: 1.25rem;
+	}
+
+	.home-name-cell {
+		white-space: normal;
+	}
+
+	.home-time-cell {
+		font-size: 0.75rem;
+	}
 }
