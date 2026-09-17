@@ -19,7 +19,7 @@
 }
 
 .form-container ::placeholder {
-	color: rgb(var(--copy-alt));
+	color: var(--copy-alt);
 }
 
 [disabled] .form-container ps-input-message {
@@ -43,7 +43,8 @@
 	min-width: 150px;
 	height: auto;
 
-	border: 1px solid var(--pkts-color-core-slate-900);
+	border-width: var(--pkts-size-border-width-xsmall, 0.0625rem);
+	border-color: var(--pkts-color-core-slate-900, #3f424d);
 }
 
 .form-container:has(ps-input-message .error.show) .ps-wrapper {
@@ -57,7 +58,7 @@
 	border: none;
 	font-family: "Source Code Pro";
 	cursor: not-allowed;
-	color: rgb(var(--copy-alt));
+	color: var(--copy-alt);
 	padding: 0px 4px;
 }
 
@@ -84,7 +85,7 @@
 }
 
 .form-container ps-input-message .required {
-	color: rgb(var(--copy-alt));
+	color: var(--copy-alt);
 	text-align: right;
 	font-size: 12px;
 }
@@ -107,7 +108,8 @@
 }
 
 .form-container .ps-wrapper:has(input:focus) {
-	border: 1.5px solid rgb(var(--success));
+	border-width: var(--pkts-size-border-width-xsmall, 0.0625rem);
+	border-color: var(--pkts-color-core-slate-900, #3f424d);
 }
 
 .form-container .ps-wrapper input:focus {
@@ -155,8 +157,8 @@ input[type="number"]::-webkit-outer-spin-button {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	background-color: rgb(var(--background));
-	color: rgb(var(--copy));
+	background-color: var(--background);
+	color: var(--copy);
 	width: 100%;
 	border: 1px solid #c3c7d9;
 	border-radius: 8px;
@@ -175,13 +177,13 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .form-container:has(input[type="file"]) .upload-area:focus {
 	outline: none;
-	border: 1.5px solid rgb(var(--success));
+	border: 1.5px solid var(--success);
 }
 
 .form-container:has(input[type="file"]) .upload-area svg {
 	width: 48px;
 	height: 48px;
-	color: rgb(var(--copy-alt));
+	color: var(--copy-alt);
 }
 
 .form-container:has(input[type="file"]) .upload-area .upload-text {
@@ -201,7 +203,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .form-container:has(input[type="file"]) .upload-area .subdesc {
 	font-size: 14px;
-	color: rgb(var(--copy-alt));
+	color: var(--copy-alt);
 }
 
 .form-container input[type="file"] {
@@ -214,7 +216,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .form-container .ps-wrapper .selected-files {
 	padding: 8px 0;
-	color: rgb(var(--copy));
+	color: var(--copy);
 	width: 100%;
 	height: 40px;
 	display: flex;
@@ -227,189 +229,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .form-container .ps-wrapper .selected-files.none {
-	color: rgb(var(--copy-alt));
-}
-
-/* ps-input-checkbox */
-
-.form-container:has(input[type="checkbox"]) {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	height: 100%;
-	min-height: 0;
-}
-
-.form-container:has(input[type="checkbox"]) ps-input-label {
-	order: 2;
-}
-
-.form-container:has(input[type="checkbox"]) .ps-wrapper {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-
-	width: 32px;
-	height: 32px;
-	background: rgb(var(--surface-1));
-	accent-color: rgb(var(--success));
-	border: 2px solid rgb(var(--copy-alt));
-	border-radius: 8px;
-	min-width: 0;
-	order: 1;
-	position: relative;
-	padding: 0;
-	cursor: pointer;
-}
-
-.form-container .ps-wrapper input[type="checkbox"] {
-	width: 32px;
-	height: 32px;
-	cursor: pointer;
-}
-
-.form-container:has(input[type="checkbox"]:checked) .ps-wrapper {
-	background: rgb(var(--success));
-}
-
-.form-container .ps-wrapper input[type="checkbox"]:checked::after {
-	content: "";
-	position: absolute;
-	left: 8px;
-	top: 2px;
-	width: 12px;
-	height: 17px;
-	border: solid white;
-	border-width: 0 4px 4px 0;
-	transform: rotate(45deg);
-	pointer-events: none;
-	display: block;
-}
-
-ps-input-checkbox[disabled] {
-	padding-top: 0;
-	margin-top: 0;
-}
-
-ps-input-checkbox[theme="Small"] .form-container:has(input[type="checkbox"]) .ps-wrapper {
-	width: 20px;
-	height: 20px;
-	background: rgb(var(--surface-1));
-	accent-color: rgb(var(--success));
-	border: 1.5px solid rgb(var(--copy-alt));
-	border-radius: 4px;
-	min-width: 0;
-	order: 1;
-	position: relative;
-	padding: 0;
-	cursor: pointer;
-}
-
-ps-input-checkbox[theme="Small"] .form-container .ps-wrapper input[type="checkbox"] {
-	width: 20px;
-	height: 20px;
-	cursor: pointer;
-}
-
-ps-input-checkbox[theme="Small"] .form-container:has(input[type="checkbox"]:checked) .ps-wrapper {
-	background: rgb(var(--success));
-}
-
-ps-input-checkbox[theme="Small"] .form-container .ps-wrapper input[type="checkbox"]:checked::after {
-	content: "";
-	position: absolute;
-	left: 5px;
-	top: 0.5px;
-	width: 7px;
-	height: 12px;
-	border: solid white;
-	border-width: 0 2px 2px 0;
-	transform: rotate(45deg);
-	pointer-events: none;
-	display: block;
-}
-
-/* ps-input-checkbox-star */
-
-.star {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	padding: 0.5rem;
-}
-
-.star svg {
-	width: 26px;
-	height: 26px;
-	color: rgb(var(--copy-alt));
-	fill: rgb(var(--copy-alt));
-}
-
-.star.checked svg {
-	fill: rgb(var(--warning));
-	color: rgb(var(--warning));
-}
-
-.star[disabled] {
-	opacity: 0.8;
-	cursor: not-allowed;
-}
-
-/* ps-input-text-multi */
-
-.inputs-container {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-
-/* ps-textarea */
-
-.form-container textarea {
-	padding: 8px 0;
-
-	width: 100%;
-	max-width: 100%;
-	min-height: 15vh;
-	max-height: 35vh;
-	resize: vertical;
-
-	border: none;
-	appearance: none;
-	outline: none;
-	background-color: transparent;
-
-	width: 100%;
-	flex: 1 1 auto;
-}
-
-.form-container .ps-wrapper:has(textarea:focus) {
-	outline: none;
-	border: 1.5px solid rgb(var(--success));
-}
-
-.form-container .ps-wrapper textarea:focus {
-	outline: none;
-	border: none;
-}
-
-[disabled] .ps-wrapper textarea {
-	background-color: transparent;
-	border: none;
-	padding: 0;
-	resize: none;
-	color: rgb(var(--copy-alt));
-	height: auto;
-	min-height: 0;
-	field-sizing: content;
-
-	pointer-events: none;
-	user-select: none;
-	cursor: not-allowed;
-}
-
-[disabled] textarea:placeholder-shown::placeholder {
-	color: transparent;
+	color: var(--copy-alt);
 }
 
 /* DROPDOWN-SELECT */
@@ -429,7 +249,9 @@ ps-input-checkbox[theme="Small"] .form-container .ps-wrapper input[type="checkbo
 
 .form-container .ps-dropdown:has(.ps-options.open) {
 	outline: none;
-	border: 1.5px solid rgb(var(--success));
+	border-color: var(--pkts-color-core-slate-1000, #30333b);
+	box-shadow: 0 0 0 var(--pkts-size-border-width-small, 0.125rem)
+		var(--pkts-color-core-blue-400, #00b6f2);
 }
 
 .form-container .ps-dropdown .ps-wrapper:has(input:focus) {
@@ -446,7 +268,9 @@ ps-input-checkbox[theme="Small"] .form-container .ps-wrapper input[type="checkbo
 	flex-direction: column;
 	overflow-y: auto;
 	gap: 10px;
-	background-color: rgb(var(--surface-2));
+	background-color: var(--pkts-color-core-white-100);
+	border-width: var(--pkts-size-border-width-xsmall, 0.0625rem);
+	border-color: var(--pkts-color-core-slate-900, #3f424d);
 
 	max-height: 0;
 	opacity: 0;
@@ -462,7 +286,7 @@ ps-input-checkbox[theme="Small"] .form-container .ps-wrapper input[type="checkbo
 	opacity: 1;
 	padding: 8px;
 	overflow-y: auto;
-	scrollbar-color: rgb(var(--copy-alt)) rgb(var(--copy));
+	scrollbar-color: var(--copy-alt) var(--copy);
 }
 
 .form-container .ps-dropdown li {
