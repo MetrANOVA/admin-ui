@@ -1,3 +1,109 @@
+<!--
+	JSONForms' own boolean and array renderers come unstyled. Scoped to this
+	editor; the array rules mirror .pipeline-json-form in input.css and can move
+	there once the two forms share a class.
+-->
+<style>
+	/* components.css gives these labels a fixed dark colour */
+	#records-fields .form-container label {
+		color: var(--copy);
+	}
+	#records-fields .control {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+	#records-fields .control:has(input[type="checkbox"]) {
+		flex-direction: row-reverse;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 0.75rem;
+	}
+	#records-fields .control .label,
+	#records-fields .array-list-label {
+		font-size: 14px;
+		font-weight: 500;
+		color: var(--copy);
+	}
+	#records-fields .control input[type="checkbox"] {
+		width: 1.25rem;
+		height: 1.25rem;
+		accent-color: var(--primary);
+	}
+	#records-fields .control input[type="number"],
+	#records-fields .control input[type="text"] {
+		width: 100%;
+		height: 42px;
+		padding: 0 0.5rem;
+		border: 1px solid var(--copy-alt);
+		border-radius: 2px;
+		background: var(--background);
+		color: var(--copy);
+	}
+	#records-fields .control .error {
+		font-size: 0.875rem;
+		color: var(--error);
+	}
+	#records-fields .array-list {
+		margin: 0;
+		padding: 0.5rem 0.75rem 0.75rem;
+		border: 1px solid var(--copy-alt);
+		border-radius: 8px;
+	}
+	#records-fields .array-list-legend {
+		display: flex;
+		flex-direction: row-reverse;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0 0.25rem;
+	}
+	#records-fields .array-list-item {
+		display: flex;
+		flex-direction: row-reverse;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 0.5rem;
+	}
+	#records-fields .array-list-item-content {
+		flex: 1;
+		min-width: 0;
+	}
+	#records-fields .array-list-item-content input {
+		width: 100%;
+		padding: 0.375rem 0.5rem;
+		border: 1px solid var(--copy-alt);
+		border-radius: 4px;
+		background: var(--background);
+		color: var(--copy);
+	}
+	#records-fields .array-list-item-toolbar {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
+	#records-fields .array-list-item-label,
+	#records-fields .array-list-item-move-up,
+	#records-fields .array-list-item-move-down {
+		display: none;
+	}
+	#records-fields .array-list-add,
+	#records-fields .array-list-item-delete {
+		width: 1.75rem;
+		height: 1.75rem;
+		border: 1px solid var(--copy-alt);
+		border-radius: 9999px;
+		background: transparent;
+		color: var(--copy);
+		line-height: 1;
+		cursor: pointer;
+	}
+	#records-fields .array-list-no-data {
+		margin: 0.5rem 0 0;
+		font-size: 0.875rem;
+		color: var(--copy-alt);
+	}
+</style>
+
 <section
 	class="flex flex-col items-center gap-4 px-16 pt-[28px] pb-[88px]"
 	id="records"
@@ -45,16 +151,26 @@
 					Johanna's comment #62 (a separate page) — flagged on issue #3.
 					Save/Cancel sit below the panel, inside the card, as drawn in the
 					final mockups; Save feeds the confirm modal.
+
+					The fields are a JSONForms <json-form>, on the renderer set up in
+					scripts/customRenderer.js. The schema is derived here from the column
+					types; once the API serves a schema and UI schema per table (the
+					pscompose pattern: GET …/form/), those replace schemaFor/layoutFor.
 				-->
 				<form
 					class="flex w-[46%] shrink-0 flex-col gap-4 rounded-[12px] bg-surface2 p-6"
 					id="records-editor"
 					data-only="edit"
+					novalidate
 				>
-					<div
-						class="flex max-h-[560px] flex-col gap-4 overflow-y-auto pr-2"
-						id="records-fields"
-					></div>
+					<!-- Holds one <json-form>, rebuilt for every selected row -->
+					<div class="max-h-[560px] overflow-y-auto pr-2" id="records-fields"></div>
+					<ul
+						id="records-errors"
+						class="m-0 list-none p-0 text-sm text-error"
+						role="alert"
+						style="display: none"
+					></ul>
 				</form>
 			</div>
 
@@ -411,16 +527,78 @@
 		pagerEl.innerHTML = parts.join("");
 	}
 
-	function renderEditor(rec) {
-		fieldsEl.innerHTML = COLUMNS.filter((col) => !RESERVED.has(col.name))
-			.map((col) => {
-				const value = rec[col.name];
-				if (col.type === "Bool") {
-					return `<label class="flex items-center gap-3 text-base"><input type="checkbox" name="${col.name}" ${value ? "checked" : ""} class="h-5 w-5" /><span class="mono">${col.name}</span></label>`;
+	const errorsEl = document.getElementById("records-errors");
+	const EDITABLE = COLUMNS.filter((col) => !RESERVED.has(col.name));
+
+	// ClickHouse column type → JSON Schema. Formats are checked by JSONForms'
+	// validator, so a malformed IPv4 never reaches the confirm dialog.
+	function propertyFor(type) {
+		const array = type.match(/^Array\((.+)\)$/);
+		if (array) return { type: "array", items: propertyFor(array[1]) };
+		if (type === "Bool") return { type: "boolean" };
+		if (/^U?Int\d+$/.test(type)) {
+			return { type: "integer", ...(type.startsWith("U") ? { minimum: 0 } : {}) };
+		}
+		if (/^Float\d+$/.test(type)) return { type: "number" };
+		if (type === "IPv4") return { type: "string", format: "ipv4" };
+		if (type === "IPv6") return { type: "string", format: "ipv6" };
+		return { type: "string" };
+	}
+
+	function schemaFor() {
+		return {
+			type: "object",
+			properties: Object.fromEntries(
+				EDITABLE.map((col) => [col.name, { title: col.name, ...propertyFor(col.type) }]),
+			),
+		};
+	}
+
+	// Text goes to the Packets input. Booleans, numbers and arrays stay on
+	// JSONForms' own renderers for now, because pkts-form-control reads and
+	// writes `value` as-is (the mismatch tracked in #11):
+	//   - the Packets switch/checkbox work through `checked`, so a boolean comes
+	//     back as "on";
+	//   - pkts-input-number hands back a string, so an edited integer fails the
+	//     schema with "must be integer".
+	// Moving them over later is one line each here.
+	function layoutFor() {
+		return {
+			type: "VerticalLayout",
+			elements: EDITABLE.map((col) => {
+				const control = { type: "Control", scope: `#/properties/${col.name}` };
+				if (propertyFor(col.type).type === "string") {
+					control.customComponent = "pkts-input-text";
 				}
-				return `<div class="flex flex-col gap-1"><label for="f-${col.name}" class="label-1 mono text-secondary">${col.name}</label><div class="pkts-input-text"><input id="f-${col.name}" name="${col.name}" value="${show(value).replace(/"/g, "&quot;")}" /></div></div>`;
-			})
-			.join("");
+				return control;
+			}),
+		};
+	}
+
+	// Nulls are left out: the schema says string/integer, and null is neither.
+	function formDataFor(rec) {
+		return Object.fromEntries(
+			EDITABLE.filter((col) => rec[col.name] !== null && rec[col.name] !== undefined).map(
+				(col) => [col.name, rec[col.name]],
+			),
+		);
+	}
+
+	// A fresh element per row. Updating form-data on a mounted form leaves the
+	// Packets inputs showing the previous row's text.
+	function renderEditor(rec) {
+		const form = document.createElement("json-form");
+		form.id = "records-json-form";
+		form.setAttribute("schema-data", JSON.stringify(schemaFor()));
+		form.setAttribute("layout-data", JSON.stringify(layoutFor()));
+		form.setAttribute("form-data", JSON.stringify(formDataFor(rec)));
+		fieldsEl.replaceChildren(form);
+		showErrors([]);
+	}
+
+	function showErrors(messages) {
+		errorsEl.innerHTML = messages.map((message) => `<li>${message}</li>`).join("");
+		errorsEl.style.display = messages.length ? "" : "none";
 	}
 
 	// Keeps the pager as wide as the visible part of the table, and follows
@@ -436,12 +614,10 @@
 		if (window.lucide) window.lucide.createIcons();
 	}
 
-	function currentEdits(rec) {
-		const data = new FormData(editorEl);
-		return COLUMNS.filter((col) => !RESERVED.has(col.name)).flatMap((col) => {
+	function currentEdits(rec, data) {
+		return EDITABLE.flatMap((col) => {
 			const before = show(rec[col.name]);
-			const after =
-				col.type === "Bool" ? String(data.has(col.name)) : (data.get(col.name) ?? "");
+			const after = show(data[col.name]);
 			return before === after
 				? []
 				: [
@@ -483,7 +659,20 @@
 	editorEl.addEventListener("submit", (event) => {
 		event.preventDefault();
 		const rec = RECORDS.find((r) => r[RECORD_ID] === selectedId);
-		const rows = currentEdits(rec);
+		const form = document.getElementById("records-json-form");
+		// novalidate on the form: pkts-form-control is form-associated and flags
+		// itself invalid, which makes the browser swallow the submit before this
+		// handler can say what is wrong.
+		if (!form.validate()) {
+			showErrors(
+				form
+					.errors()
+					.map((error) => `${error.instancePath.replace(/^\//, "")}: ${error.message}`),
+			);
+			return;
+		}
+		showErrors([]);
+		const rows = currentEdits(rec, JSON.parse(form.serializeForm()));
 		if (!rows.length) {
 			setState("view");
 			return;
