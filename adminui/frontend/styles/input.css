@@ -9,24 +9,37 @@
    Application tokens
    ========================================================= */
 
-:root {
+:root,
+:root[data-theme="light"] {
+	color-scheme: light;
+
+	--primary: #3094ab;
+	--secondary: #305763;
+	--tertiary: #9fc9d2;
+
 	--background: #fafaf0;
 	--surface-1: #b0cad0;
 	--surface-2: #e1eff2;
 
+	--copy: #252f30;
+	--copy-alt: #4d595d;
+	--copy-alt-2: #4d595d;
+	--shadow: #19191a;
+
+	--accent: #f7a666;
+	--success: #00960a;
+	--error: #a6111b;
+
 	--surface-menu: #9fc9d2;
 	--menu-active: #305763;
 
-	--copy: #252f30;
-	--copy-alt: #4d595d;
-	--shadow: #19191a;
+	--default-surface: #ffffff;
+	--default-hover: #a5b3b7;
+	--default-pressed: #4d595d;
 
-	--primary: #3094ab;
-	--secondary: #305763;
-	--accent: #f7a666;
-
-	--success: #00960a;
-	--error: #a6111b;
+	--branded-surface: #4e455b;
+	--branded-hover: #978da9;
+	--branded-pressed: #3e394e;
 
 	/*
 	 * Packets typography tokens.
@@ -43,52 +56,66 @@
 }
 
 /* Dark-mode tokens */
-[data-theme="dark"] {
+:root[data-theme="dark"] {
+	color-scheme: dark;
+
+	--primary: #45a9bf;
+	--secondary: #9fc9d2;
+	--tertiary: #305763;
+
 	--background: #052124;
 	--surface-1: #2a2f34;
 	--surface-2: #3b464e;
 
+	--copy: #fafaf0;
+	--copy-alt: #a5b3b7;
+	--copy-alt-2: #4d595d;
+	--shadow: #4e45bb;
+
+	--accent: #bf7f45;
+	--success: #00960a;
+	--error: #ff656f;
+
 	--surface-menu: #2a2f34;
 	--menu-active: #45a9bf;
 
-	--copy: #fafaf0;
-	--copy-alt: #a5b3b7;
-	--shadow: #4e45bb;
+	--default-surface: #0d0d0d;
+	--default-hover: #4d595d;
+	--default-pressed: #3b464e;
 
-	--primary: #45a9bf;
-	--secondary: #9fc9d2;
-	--accent: #bf7f45;
-
-	--success: #00960a;
-	--error: #ff656f;
+	--branded-surface: #292430;
+	--branded-hover: #4e455b;
+	--branded-pressed: #3e394e;
 }
 
 /* Allow application color utilities to override Packets typography colors. */
-.packets .text-copy {
+/* Application color utilities — stronger than Packets element colors */
+
+html.packets[data-theme] .text-copy {
 	color: var(--copy);
 }
 
-.packets .text-copy-alt {
+html.packets[data-theme] .text-copy-alt {
 	color: var(--copy-alt);
 }
 
-.packets .text-primary {
+html.packets[data-theme] .text-primary {
 	color: var(--primary);
 }
 
-.packets .text-secondary {
+html.packets[data-theme] .text-secondary {
 	color: var(--secondary);
 }
 
-.packets .text-accent {
+html.packets[data-theme] .text-accent {
 	color: var(--accent);
 }
 
-.packets .text-success {
+html.packets[data-theme] .text-success {
 	color: var(--success);
 }
 
-.packets .text-error {
+html.packets[data-theme] .text-error {
 	color: var(--error);
 }
 
@@ -182,13 +209,13 @@ a[data-nav-link] > svg {
 
 /* Hover state */
 a[data-nav-link]:hover {
-	background-color: var(--surface-1);
+	background-color: var(--default-hover);
 	color: var(--copy);
 }
 
 /* Mouse/touch pressed state */
 a[data-nav-link]:active {
-	background-color: var(--menu-active);
+	background-color: var(--default-pressed);
 	color: var(--copy);
 }
 
@@ -242,6 +269,7 @@ a[data-nav-link].nav-link-active:active {
 	padding: 2rem 2.5rem;
 
 	border-radius: 0.75rem;
+	border: 2px solid transparent;
 	background-color: var(--surface-2);
 	color: var(--copy);
 	text-decoration: none;
@@ -256,7 +284,7 @@ a[data-nav-link].nav-link-active:active {
 }
 
 .home-action-card:hover {
-	background-color: var(--surface-1);
+	border-color: var(--background);
 	color: var(--copy);
 	text-decoration: none;
 	transform: translateY(-1px);
@@ -264,7 +292,7 @@ a[data-nav-link].nav-link-active:active {
 }
 
 .home-action-card:active {
-	background-color: var(--menu-active);
+	border-color: var(--menu-active);
 	color: var(--copy);
 	transform: translateY(1px);
 	box-shadow: 0 1px 1px rgb(0 0 0 / 30%);
@@ -319,7 +347,7 @@ a[data-nav-link].nav-link-active:active {
 }
 
 .home-action-card:hover .home-action-button {
-	background-color: var(--secondary);
+	border-color: var(--secondary);
 	transform: translateX(2px);
 }
 
@@ -340,9 +368,9 @@ a[data-nav-link].nav-link-active:active {
 	overflow: hidden;
 	border-radius: 0.75rem;
 
-	background-color: var(--surface-menu);
+	background-color: var(--surface-1);
 	color: var(--copy);
-	border: var(--surface-2, 2px) solid;
+	border: 2px solid var(--surface-2);
 }
 
 .home-data-panel h2 {
@@ -467,4 +495,91 @@ a.pkts-card svg {
 	.home-time-cell {
 		font-size: 0.75rem;
 	}
+}
+
+/* =========================================================
+   Reusable form actions
+   ========================================================= */
+
+pkts-form-actions {
+	display: block;
+	width: 100%;
+}
+
+pkts-form-actions .pipeline-actions {
+	display: flex;
+	width: 100%;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.75rem;
+	margin-top: 1.5rem;
+}
+/* Shared form-action button layout */
+.packets pkts-form-actions button.pkts-button.pipeline-action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.625rem;
+
+	min-width: 8.25rem;
+	padding-inline: 1.25rem;
+
+	border-radius: 9999px;
+	font-weight: 600;
+}
+
+/* Cancel */
+.packets pkts-form-actions button.pkts-button.pipeline-action--cancel {
+	color: var(--background);
+	background: var(--copy-alt);
+	border-color: var(--copy-alt);
+}
+
+/* Save */
+.packets pkts-form-actions button.pkts-button.pipeline-action--save {
+	color: var(--background);
+	background: var(--success);
+	border-color: var(--success);
+}
+
+/* Icons */
+.packets pkts-form-actions button.pkts-button.pipeline-action svg {
+	width: 1.25rem;
+	height: 1.25rem;
+	color: inherit;
+	stroke: currentColor;
+}
+
+/* Cancel hover */
+.packets pkts-form-actions button.pkts-button.pipeline-action--cancel:hover {
+	color: var(--background);
+	background: var(--shadow);
+	border-color: var(--shadow);
+}
+
+/* Save hover */
+.packets pkts-form-actions button.pkts-button.pipeline-action--save:hover {
+	color: var(--background);
+	background: color-mix(in srgb, var(--success) 82%, var(--shadow));
+	border-color: color-mix(in srgb, var(--success) 82%, var(--shadow));
+}
+
+/* Keyboard focus */
+.packets pkts-form-actions button.pkts-button.pipeline-action:focus-visible {
+	outline: 3px solid color-mix(in srgb, var(--primary) 35%, transparent);
+	outline-offset: 2px;
+}
+
+/* Disabled */
+.packets pkts-form-actions button.pkts-button.pipeline-action:disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+/* =========================================================
+   Packets Components Color Overrides
+   ========================================================= */
+
+html.packets[data-theme] .pkts-input-text {
+	background-color: var(--default-surface);
+	border-color: var(--copy-alt);
 }
