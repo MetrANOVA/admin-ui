@@ -22,6 +22,7 @@
 
 		<script type="module" src="/scripts/customRenderer.js"></script>
 		<script type="module" src="/scripts/pkts-form-control.js"></script>
+		<script type="module" src="/scripts/pkts-form-actions.js"></script>
 		<script src="/components/index.js" type="module"></script>
 		<link rel="stylesheet" href="/styles/components.css" />
 
@@ -35,18 +36,24 @@
 			})();
 		</script>
 	</head>
-	<body class="font-sans">
-		<div class="flex min-h-screen flex-col">
-			<div class="flex flex-1">
+	<body class="h-dvh overflow-hidden font-sans">
+		<div class="flex h-dvh min-h-0 flex-col overflow-hidden">
+			<div class="flex min-h-0 flex-1 overflow-hidden">
 				<div
 					id="nav-left"
+					class="h-full shrink-0 overflow-hidden"
 					hx-get="/partials/nav_left.html"
 					hx-trigger="load"
 					hx-swap="innerHTML"
 				></div>
-				<div id="main-content" class="min-w-0 flex-1"></div>
+
+				<main
+					id="main-content"
+					class="h-full min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto"
+				></main>
 			</div>
 		</div>
+
 		<script type="module" src="/scripts/app.js"></script>
 	</body>
 </html>
