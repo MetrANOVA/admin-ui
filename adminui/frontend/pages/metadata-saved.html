@@ -1,0 +1,165 @@
+<section class="flex flex-col items-center gap-4 px-16 pt-[28px] pb-[88px]">
+	<div class="flex w-full max-w-[1348px] flex-col items-center gap-6">
+		<h1 class="h1 display2">Success!</h1>
+
+		<div class="pkts-card flex w-full flex-col gap-6 rounded-[18px]">
+			<div class="flex flex-col gap-1">
+				<p class="label-1 mono text-secondary">Table Name</p>
+				<p class="h4 text-copy" id="saved-table-name">meta_interface</p>
+			</div>
+
+			<div class="flex flex-col gap-1">
+				<p class="label-1 mono text-secondary">Table Type</p>
+				<p class="text-base text-copy" id="saved-table-type">Metadata Table</p>
+			</div>
+
+			<div class="flex flex-col gap-2">
+				<p class="label-1 mono text-secondary">Table Fields</p>
+				<div class="w-full overflow-x-auto">
+					<table class="pkts-data-table w-full">
+						<thead>
+							<tr>
+								<th scope="col"><div class="labelWrapper">Column Name</div></th>
+								<th scope="col"><div class="labelWrapper">Data Type</div></th>
+								<th scope="col"><div class="labelWrapper">Nullable</div></th>
+								<th scope="col"><div class="labelWrapper">Primary Key</div></th>
+							</tr>
+						</thead>
+						<tbody id="saved-field-rows"></tbody>
+						<tfoot>
+							<tr>
+								<td colspan="4">
+									<div
+										class="flex flex-wrap items-center justify-center gap-2"
+										id="saved-pager"
+									></div>
+								</td>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+			</div>
+
+			<div class="flex flex-wrap justify-end gap-3">
+				<a
+					href="/metadata-manager"
+					hx-get="/pages/manage-metadata.html"
+					hx-target="#main-content"
+					hx-push-url="/metadata-manager"
+					class="pkts-button pkts-primary inline-flex items-center gap-2"
+				>
+					<i data-lucide="corner-up-left" class="h-5 w-5"></i>
+					Back to Metadata Manager
+				</a>
+				<a
+					href="/tables"
+					hx-get="/pages/tables.html"
+					hx-target="#main-content"
+					hx-push-url="/tables"
+					class="pkts-button pkts-outline inline-flex items-center"
+				>
+					View in Library
+				</a>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script type="module">
+	// Layout pass for issue #3, the Success view. Unlike the list, every column
+	// here does have a source once the real endpoint lands (issue #9):
+	// GET /metadata/ already returns meta_fields with field_name, field_type and
+	// nullable, and Primary Key is derived from the type's identifier array.
+	const PAGE_SIZE = 6;
+
+	// Shaped like a meta_fields entry plus the type's identifier, so swapping in
+	// the real response is a straight substitution.
+	const IDENTIFIER = ["start_time", "collector_id"];
+	const FIELDS = [
+		{ field_name: "start_time", field_type: "DateTime64(3, 'UTC')", nullable: false },
+		{ field_name: "end_time", field_type: "DateTime64(3, 'UTC')", nullable: false },
+		{ field_name: "insert_time", field_type: "DateTime64(3, 'UTC')", nullable: false },
+		{ field_name: "collector_id", field_type: "LowCardinality(String)", nullable: false },
+		{ field_name: "policy_originator", field_type: "LowCardinality(String)", nullable: false },
+		{ field_name: "src_as_id", field_type: "UInt32", nullable: true },
+		{ field_name: "dst_as_id", field_type: "UInt32", nullable: true },
+		{ field_name: "src_ip", field_type: "IPv6", nullable: true },
+		{ field_name: "dst_ip", field_type: "IPv6", nullable: true },
+		{ field_name: "protocol", field_type: "LowCardinality(String)", nullable: true },
+	];
+
+	const rowsEl = document.getElementById("saved-field-rows");
+	const pagerEl = document.getElementById("saved-pager");
+
+	let page = 1;
+
+	// pkts-chip has no primary/secondary variants — outline is the quiet form,
+	// which matches how False is drawn in the mockups.
+	function chip(value) {
+		return `<span class="pkts-chip${value ? "" : " pkts-outline"}">${
+			value ? "True" : "False"
+		}</span>`;
+	}
+
+	function renderRows(fields) {
+		rowsEl.innerHTML = fields
+			.map(
+				(field) => `
+					<tr>
+						<td data-parent="Column Name" class="mono">${field.field_name}</td>
+						<td data-parent="Data Type" class="mono">${field.field_type}</td>
+						<td data-parent="Nullable">${chip(field.nullable)}</td>
+						<td data-parent="Primary Key">${chip(IDENTIFIER.includes(field.field_name))}</td>
+					</tr>
+				`,
+			)
+			.join("");
+	}
+
+	function pageButton(label, targetPage, { active = false, disabled = false } = {}) {
+		const variant = active ? "pkts-primary" : "pkts-secondary";
+		return `<button type="button" class="pkts-button pkts-small ${variant}" data-page="${targetPage}"${
+			disabled ? " disabled" : ""
+		}>${label}</button>`;
+	}
+
+	function renderPager(totalPages) {
+		if (totalPages <= 1) {
+			pagerEl.innerHTML = "";
+			return;
+		}
+		const parts = [pageButton("Prev", page - 1, { disabled: page === 1 })];
+		const shown = [...new Set([1, page, totalPages])].sort((a, b) => a - b);
+		let previous = 0;
+		for (const n of shown) {
+			if (n - previous > 1) {
+				parts.push(`<span class="px-1">…</span>`);
+			}
+			parts.push(pageButton(String(n), n, { active: n === page }));
+			previous = n;
+		}
+		parts.push(pageButton("Next", page + 1, { disabled: page === totalPages }));
+		pagerEl.innerHTML = parts.join("");
+	}
+
+	function render() {
+		const totalPages = Math.max(1, Math.ceil(FIELDS.length / PAGE_SIZE));
+		page = Math.min(page, totalPages);
+		renderRows(FIELDS.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE));
+		renderPager(totalPages);
+		if (window.lucide) {
+			window.lucide.createIcons();
+		}
+	}
+
+	pagerEl.addEventListener("click", (event) => {
+		const button = event.target.closest("[data-page]");
+		if (!button || button.disabled) {
+			return;
+		}
+		page = Number(button.dataset.page);
+		render();
+	});
+
+	render();
+</script>
