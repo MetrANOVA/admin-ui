@@ -36,7 +36,7 @@
 	align-items: center;
 	padding: 0 0 0 12px;
 
-	background-color: var(--pkts-color-core-white-100);
+	background-color: var(--default-surface);
 	color: var(--copy);
 
 	width: 100%;
@@ -44,7 +44,7 @@
 	height: auto;
 
 	border-width: var(--pkts-size-border-width-xsmall, 0.0625rem);
-	border-color: var(--pkts-color-core-slate-900, #3f424d);
+	border-color: var(--copy-alt);
 }
 
 .form-container:has(ps-input-message .error.show) .ps-wrapper {
@@ -249,7 +249,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .form-container .ps-dropdown:has(.ps-options.open) {
 	outline: none;
-	border-color: var(--pkts-color-core-slate-1000, #30333b);
+	border-color: var(--copy-alt);
 	box-shadow: 0 0 0 var(--pkts-size-border-width-small, 0.125rem)
 		var(--pkts-color-core-blue-400, #00b6f2);
 }
@@ -268,9 +268,7 @@ input[type="number"]::-webkit-outer-spin-button {
 	flex-direction: column;
 	overflow-y: auto;
 	gap: 10px;
-	background-color: var(--pkts-color-core-white-100);
-	border-width: var(--pkts-size-border-width-xsmall, 0.0625rem);
-	border-color: var(--pkts-color-core-slate-900, #3f424d);
+	background-color: var(--default-surface);
 
 	max-height: 0;
 	opacity: 0;
@@ -287,6 +285,10 @@ input[type="number"]::-webkit-outer-spin-button {
 	padding: 8px;
 	overflow-y: auto;
 	scrollbar-color: var(--copy-alt) var(--copy);
+	border-top: 0;
+	border-right: 1px solid var(--copy-alt);
+	border-bottom: 1px solid var(--copy-alt);
+	border-left: 1px solid var(--copy-alt);
 }
 
 .form-container .ps-dropdown li {
