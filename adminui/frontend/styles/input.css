@@ -583,3 +583,31 @@ html.packets[data-theme] .pkts-input-text {
 	background-color: var(--default-surface);
 	border-color: var(--copy-alt);
 }
+
+/* =========================================================
+   JSON Forms base layouts
+   ========================================================= */
+
+json-form .vertical-layout {
+	display: flex;
+	width: 100%;
+	min-width: 0;
+	flex-direction: column;
+	gap: 0.875rem;
+}
+
+json-form .horizontal-layout {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	min-width: 0;
+	grid-template-columns: repeat(auto-fit, minmax(13.75rem, 1fr));
+	gap: 0.875rem;
+	align-items: start;
+}
+
+json-form .vertical-layout-item,
+json-form .horizontal-layout-item {
+	width: 100%;
+	min-width: 0;
+}
