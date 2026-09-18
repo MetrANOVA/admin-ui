@@ -21,8 +21,8 @@
 	--surface-1: #b0cad0;
 	--surface-2: #e1eff2;
 
-	--copy: #252f30;
-	--copy-alt: #4d595d;
+	--copy: #292430;
+	--copy-alt: #3b464e;
 	--copy-alt-2: #4d595d;
 	--shadow: #19191a;
 
@@ -76,7 +76,7 @@
 	--success: #00960a;
 	--error: #ff656f;
 
-	--surface-menu: #2a2f34;
+	--surface-menu: #243636;
 	--menu-active: #45a9bf;
 
 	--default-surface: #0d0d0d;
@@ -610,4 +610,104 @@ json-form .vertical-layout-item,
 json-form .horizontal-layout-item {
 	width: 100%;
 	min-width: 0;
+}
+
+/* =========================================================
+   Define Pipeline page
+   ========================================================= */
+
+.pipeline-page {
+	display: flex;
+	flex-direction: column;
+	width: min(calc(100% - 2rem), 68.75rem);
+	margin-inline: auto;
+	padding-block: 3.5rem 5rem;
+	color: var(--copy);
+	gap: 2rem;
+}
+
+.pipeline-page__title {
+	width: auto;
+	text-align: center;
+}
+
+.pipeline-panel {
+	width: 100%;
+	min-width: 0;
+	padding: 1.75rem;
+
+	color: var(--copy);
+	background-color: var(--surface-1);
+	box-shadow: 0 3px 10px rgb(0 0 0 / 8%);
+}
+
+/* =========================================================
+   Mapping Rules
+   ========================================================= */
+
+.pipeline-json-form .array-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.pipeline-json-form .array-list-legend {
+	display: flex;
+	flex-direction: row;
+	margin-bottom: 8px;
+}
+
+.pipeline-json-form .array-list-legend .array-list-label {
+	display: flex;
+	flex-direction: row;
+	gap: 8px;
+	align-items: center;
+	font-weight: 500;
+	font-size: 14px;
+	white-space: nowrap;
+}
+
+.pipeline-json-form .array-list-item {
+	display: flex;
+	flex-direction: column;
+}
+
+.pipeline-json-form .array-list-item-content {
+	padding: 2.5rem 1.5rem;
+	background-color: var(--surface-2);
+	border-radius: 0.375rem;
+	list-style: none;
+	order: 1;
+}
+
+.pipeline-json-form .array-list-item-toolbar {
+	order: 2;
+}
+
+.pipeline-json-form .horizontal-layout {
+	display: flex;
+	align-items: stretch;
+	gap: 0.75rem;
+}
+
+.pipeline-json-form .horizontal-layout-item:has(> .label-element:only-child) {
+	display: flex;
+	flex: 0 0 auto;
+	align-self: stretch;
+	align-items: center;
+	justify-content: center;
+
+	width: fit-content;
+	min-width: max-content;
+}
+
+.pipeline-json-form .horizontal-layout-item:has(> .label-element:only-child) > .label-element {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	width: auto !important;
+	height: 100%;
+	margin: 0;
+	white-space: nowrap;
 }
