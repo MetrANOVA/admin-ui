@@ -182,7 +182,20 @@
 			<div class="indicator"></div>
 		</div> -->
 
-		<!-- User avatar -->
-		<div class="pkts-avatar pkts-medium pkts-grape"><span>JL</span></div>
+		<!-- User avatar; initials come from /auth/me (see checkSession in app.js) -->
+		<div class="pkts-avatar pkts-medium pkts-grape"><span id="user-avatar">JL</span></div>
+
+		<!-- Hidden until the API reports a logged-in user -->
+		<button
+			id="logout-button"
+			type="button"
+			title="Log out"
+			aria-label="Log out"
+			style="display: none"
+			class="flex items-center gap-2 px-1 text-sm text-copy transition-colors hover:text-primary"
+		>
+			<i data-lucide="log-out" class="h-5 w-5"></i>
+			Log out
+		</button>
 	</div>
 </nav>
