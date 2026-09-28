@@ -1,8 +1,8 @@
-<section class="flex flex-col items-center gap-4 px-16 pt-[28px] pb-[88px]">
+<section class="flex flex-col items-center gap-4 px-[max(4rem,9.6vw)] pt-[28px] pb-[88px]">
 	<div class="flex w-full max-w-[1348px] flex-col items-center gap-6">
 		<div class="flex items-center justify-center gap-3">
 			<i data-lucide="workflow" class="h-8 w-8 shrink-0 text-copy"></i>
-			<h1 class="h1 display2">Pipelines</h1>
+			<h1 class="h1 display2 !font-sans">Pipelines</h1>
 		</div>
 
 		<div class="flex w-full items-center gap-4">
@@ -23,14 +23,14 @@
 				hx-get="/pages/define-pipelines.html"
 				hx-target="#main-content"
 				hx-push-url="/define-pipeline"
-				class="pkts-button shrink-0 whitespace-nowrap border-accent bg-accent text-white"
+				class="inline-flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-semibold !text-white !no-underline transition hover:brightness-95"
 			>
 				Define New Pipeline
 			</a>
 		</div>
 
 		<div class="w-full overflow-x-auto">
-			<table class="pkts-data-table w-full">
+			<table class="pkts-data-table mn-data-table w-full">
 				<thead>
 					<tr>
 						<th scope="col" class="whitespace-nowrap">
@@ -97,7 +97,7 @@
 					<tr>
 						<td colspan="4">
 							<div
-								class="flex flex-wrap items-center justify-center gap-2"
+								class="mn-page-tiles"
 								id="pipelines-pager"
 							></div>
 						</td>
@@ -200,10 +200,9 @@
 	}
 
 	function pageButton(label, targetPage, { active = false, disabled = false } = {}) {
-		const variant = active ? "pkts-primary" : "pkts-secondary";
-		return `<button type="button" class="pkts-button pkts-small ${variant}" data-page="${targetPage}"${
-			disabled ? " disabled" : ""
-		}>${label}</button>`;
+		return `<button type="button" class="mn-page-tile" data-page="${targetPage}"${
+			active ? ' aria-current="page"' : ""
+		}${disabled ? " disabled" : ""}>${label}</button>`;
 	}
 
 	function renderPager(totalPages) {
@@ -219,7 +218,7 @@
 		let previous = 0;
 		for (const n of shown) {
 			if (n - previous > 1) {
-				parts.push(`<span class="px-1 text-copy-alt">…</span>`);
+				parts.push(`<span class="mn-page-gap">…</span>`);
 			}
 			parts.push(pageButton(String(n), n, { active: n === page }));
 			previous = n;

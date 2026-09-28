@@ -1,4 +1,21 @@
-<section class="flex flex-col items-center gap-4 px-16 pt-[28px] pb-[88px]">
+<!--
+	Packets paints the code block grey, and near-black in dark mode; the mockup
+	draws it on the plain row surface with a copy-alt-2 stroke.
+-->
+<style>
+	.packets .pkts-code-block.pipeline-code {
+		background: var(--mn-table-surface);
+		border: 1px solid var(--copy-alt-2);
+		border-radius: 4px;
+		color: var(--copy);
+	}
+	.packets .pipeline-code .pkts-code-block-lang-chip {
+		background: var(--surface-1);
+		color: var(--copy);
+	}
+</style>
+
+<section class="flex flex-col items-center gap-4 px-[max(4rem,9.6vw)] pt-[28px] pb-[88px]">
 	<div class="flex w-full max-w-[1348px] flex-col items-center gap-6">
 		<div class="relative flex w-full items-center justify-center">
 			<a
@@ -6,17 +23,17 @@
 				hx-get="/pages/pipelines.html"
 				hx-target="#main-content"
 				hx-push-url="/pipelines"
-				class="absolute left-0 inline-flex h-10 w-10 items-center justify-center rounded-full bg-copy text-background"
+				class="absolute left-0 inline-flex h-10 w-10 items-center justify-center rounded-full bg-copy-alt text-surface2"
 				aria-label="Back to Pipelines"
 			>
-				<i data-lucide="corner-up-left" class="h-5 w-5"></i>
+				<i data-lucide="undo-2" class="h-5 w-5"></i>
 			</a>
 		</div>
 
-		<div class="pkts-card flex w-full flex-col gap-8 rounded-[18px] px-10 py-8">
+		<div class="flex w-full flex-col gap-8 rounded border border-shadow bg-surface1 px-10 py-8">
 			<div class="flex items-center justify-center gap-3">
 				<i data-lucide="workflow" class="h-8 w-8 shrink-0 text-copy"></i>
-				<h1 class="h1 display2" id="pipeline-title">…</h1>
+				<h1 class="h1 display2 !font-sans" id="pipeline-title">…</h1>
 			</div>
 
 			<!--
@@ -28,35 +45,35 @@
 			-->
 			<dl class="grid grid-cols-1 gap-x-12 gap-y-5 md:grid-cols-2" id="pipeline-facts">
 				<div>
-					<dt class="label text-copy">Table Name</dt>
+					<dt class="label text-copy-alt">Table Name</dt>
 					<dd class="text-base text-copy" data-fact="definition_ref"></dd>
 				</div>
 				<div>
-					<dt class="label text-copy">Pipeline Name</dt>
+					<dt class="label text-copy-alt">Pipeline Name</dt>
 					<dd class="text-base text-copy" data-fact="name"></dd>
 				</div>
 				<div class="md:col-span-2">
-					<dt class="label text-copy">Description</dt>
+					<dt class="label text-copy-alt">Description</dt>
 					<dd class="max-w-prose text-base text-copy" data-fact="description"></dd>
 				</div>
 				<div>
-					<dt class="label text-copy">Type</dt>
+					<dt class="label text-copy-alt">Type</dt>
 					<dd class="mt-1" data-fact="type"></dd>
 				</div>
 				<div>
-					<dt class="label text-copy">Match Field</dt>
+					<dt class="label text-copy-alt">Match Field</dt>
 					<dd class="text-base text-copy" data-fact="match_field"></dd>
 				</div>
 			</dl>
 
 			<div class="flex flex-col gap-3">
-				<p class="label text-copy">Mapping Rules</p>
-				<div class="flex flex-col gap-4 rounded-[12px] bg-surface2 p-4" id="pipeline-rules"></div>
+				<p class="label text-copy-alt">Mapping Rules</p>
+				<div class="flex flex-col gap-4" id="pipeline-rules"></div>
 			</div>
 
 			<div class="flex flex-col gap-3">
-				<p class="label text-copy">Preview</p>
-				<div class="pkts-code-block max-h-[520px] rounded-[12px] bg-surface2 text-copy">
+				<p class="label text-copy-alt">Preview</p>
+				<div class="pkts-code-block pipeline-code max-h-[520px]">
 					<div class="pkts-code-block-top">
 						<span class="pkts-code-block-lang-chip">yaml</span>
 						<button
@@ -79,7 +96,7 @@
 					hx-get="/pages/define-pipelines.html"
 					hx-target="#main-content"
 					hx-push-url="/define-pipeline"
-					class="pkts-button inline-flex items-center gap-2 border-accent bg-accent text-white"
+					class="inline-flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-semibold !text-white !no-underline transition hover:brightness-95"
 				>
 					Edit Pipeline
 					<i data-lucide="arrow-right" class="h-5 w-5"></i>
@@ -186,8 +203,9 @@
 			)
 			.join("");
 		return `
-			<article class="flex flex-col gap-4 rounded-[10px] border border-dashed border-copy-alt bg-surface1 p-5">
-				<span class="pkts-chip pkts-outline cursor-default self-start border-accent text-accent">Rule ${index + 1}</span>
+			<article class="rounded border border-shadow bg-surface2 p-4">
+				<div class="relative flex flex-col gap-4 rounded border border-dashed border-primary px-6 pb-5 pt-7">
+				<span class="absolute -top-3 left-4 rounded bg-surface1 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-accent">Rule ${index + 1}</span>
 				<div class="grid grid-cols-[3.5rem_1fr_1fr_1fr] items-end gap-x-6 gap-y-3 text-base text-copy">
 					<span class="font-semibold">IF</span>
 					<span><span class="block label text-copy-alt">Field</span>${pipeline.match_field}</span>
@@ -207,6 +225,7 @@
 						</div>
 						${configRows}
 					</div>
+				</div>
 				</div>
 			</article>
 		`;
