@@ -23,10 +23,11 @@
 <!-- Not "confirm-modal": components.css (from pscompose) styles that id and would force this open. -->
 <dialog
 	id="confirm-dialog"
-	class="w-[min(1045px,calc(100vw-2rem))] rounded-[18px] border-2 border-copy bg-surface1 p-0 text-copy backdrop:bg-black/40"
+	class="fixed inset-0 m-auto h-fit max-h-[calc(100dvh-4rem)] w-[min(1045px,calc(100vw-4rem))] overflow-y-auto rounded border border-shadow bg-surface1 p-0 text-copy backdrop:bg-black/40"
 	aria-labelledby="confirm-dialog-title"
 >
-	<form method="dialog" class="flex flex-col gap-6 p-8">
+	<!-- Centred on screen (the dialog's own margin:auto, kept explicit) with wider inner margins, per Johanna on #13 -->
+	<form method="dialog" class="flex flex-col items-center gap-8 px-12 py-10">
 		<button
 			value="cancel"
 			class="absolute right-4 top-4 inline-flex text-inherit opacity-70 transition-opacity hover:opacity-100"
@@ -35,13 +36,13 @@
 			<i data-lucide="circle-x" class="h-5 w-5"></i>
 		</button>
 
-		<div class="flex items-center justify-center gap-3 pr-8">
+		<div class="flex items-center justify-center gap-3 px-8 text-center">
 			<i data-lucide="circle-alert" class="h-6 w-6 shrink-0"></i>
 			<h2 class="h4" id="confirm-dialog-title"></h2>
 		</div>
 
-		<div class="w-full overflow-x-auto">
-			<table class="pkts-data-table w-full">
+		<div class="w-full max-w-[860px] overflow-x-auto">
+			<table class="pkts-data-table mn-data-table w-full">
 				<thead>
 					<tr>
 						<th scope="col"><div class="labelWrapper">Primary Key</div></th>
@@ -55,7 +56,7 @@
 					<tr>
 						<td colspan="4">
 							<div
-								class="flex flex-wrap items-center justify-center gap-2"
+								class="mn-page-tiles"
 								id="confirm-dialog-pager"
 							></div>
 						</td>
@@ -64,10 +65,10 @@
 			</table>
 		</div>
 
-		<div class="flex flex-wrap justify-end gap-3">
+		<div class="flex w-full max-w-[860px] flex-wrap justify-end gap-3">
 			<button
 				value="cancel"
-				class="pkts-button inline-flex items-center gap-2 border-copy bg-copy text-background"
+				class="pkts-button inline-flex items-center gap-2 border-copy-alt bg-copy-alt text-background"
 			>
 				<i data-lucide="x" class="h-5 w-5"></i>
 				Cancel
@@ -118,10 +119,9 @@
 	}
 
 	function pageButton(label, targetPage, { active = false, disabled = false } = {}) {
-		const variant = active ? "pkts-primary" : "pkts-secondary";
-		return `<button type="button" class="pkts-button pkts-small ${variant}" data-page="${targetPage}"${
-			disabled ? " disabled" : ""
-		}>${label}</button>`;
+		return `<button type="button" class="mn-page-tile" data-page="${targetPage}"${
+			active ? ' aria-current="page"' : ""
+		}${disabled ? " disabled" : ""}>${label}</button>`;
 	}
 
 	function renderPager() {
@@ -136,7 +136,7 @@
 		let previous = 0;
 		for (const n of shown) {
 			if (n - previous > 1) {
-				parts.push(`<span class="px-1">…</span>`);
+				parts.push(`<span class="mn-page-gap">…</span>`);
 			}
 			parts.push(pageButton(String(n), n, { active: n === page }));
 			previous = n;

@@ -1,37 +1,25 @@
 <section
-	class="flex flex-col items-center gap-4 px-16 pt-[28px] pb-[88px]"
+	class="flex flex-col items-center gap-4 px-[max(4rem,9.6vw)] pt-[28px] pb-[88px]"
 	id="records"
-	data-state="view"
+	data-state="choose"
 >
 	<div class="flex w-full max-w-[1348px] flex-col items-center gap-6">
-		<div class="relative flex w-full items-center justify-center">
-			<a
-				href="/metadata-manager"
-				hx-get="/pages/manage-metadata.html"
-				hx-target="#main-content"
-				hx-push-url="/metadata-manager"
-				class="absolute left-0 inline-flex h-10 w-10 items-center justify-center rounded-full bg-copy text-background"
-				aria-label="Back to Metadata Manager"
-				data-only="view"
-			>
-				<i data-lucide="corner-up-left" class="h-5 w-5"></i>
-			</a>
-			<h1 class="h1 display2" id="records-title">meta_interface</h1>
-		</div>
+		<!-- No back button: the final mockups drop it; the nav leads back to the list -->
+		<h1 class="h1 display2" id="records-title">meta_interface</h1>
 
-		<div class="pkts-card flex w-full flex-col gap-4 rounded-[18px]">
+		<div class="flex w-full flex-col gap-4 rounded border border-shadow bg-surface1 p-8">
 			<p class="text-base text-copy-alt" data-only="choose">Choose a row to edit</p>
 
-			<div class="flex w-full items-start gap-6">
+			<div class="flex w-full items-stretch gap-6">
 				<div class="min-w-0 flex-1 overflow-x-auto" id="records-table-wrap">
-					<table class="pkts-data-table w-full">
+					<table class="pkts-data-table mn-data-table w-full">
 						<thead id="records-head"></thead>
 						<tbody id="records-rows"></tbody>
 						<tfoot id="records-foot">
 							<tr>
 								<td id="records-foot-cell">
 									<div
-										class="flex flex-wrap items-center justify-center gap-2"
+										class="mn-page-tiles"
 										id="records-pager"
 									></div>
 								</td>
@@ -46,13 +34,18 @@
 					Save/Cancel sit below the panel, inside the card, as drawn in the
 					final mockups; Save feeds the confirm modal.
 				-->
+				<!--
+					The panel is sized by the table next to it (a page of rows), not by its
+					own fields: the scroller is absolutely placed, so the form adds no
+					height of its own and the two line up top and bottom.
+				-->
 				<form
-					class="flex w-[46%] shrink-0 flex-col gap-4 rounded-[12px] bg-surface2 p-6"
+					class="relative w-[46%] shrink-0 rounded-[12px] bg-surface2"
 					id="records-editor"
 					data-only="edit"
 				>
 					<div
-						class="flex max-h-[560px] flex-col gap-4 overflow-y-auto pr-2"
+						class="absolute inset-0 flex flex-col gap-4 overflow-y-auto p-6"
 						id="records-fields"
 					></div>
 				</form>
@@ -63,7 +56,7 @@
 				<button
 					type="button"
 					id="records-cancel"
-					class="pkts-button inline-flex items-center gap-2 border-copy bg-copy text-background"
+					class="pkts-button inline-flex items-center gap-2 border-copy-alt bg-copy-alt text-background"
 				>
 					<i data-lucide="x" class="h-5 w-5"></i>
 					Cancel
@@ -79,24 +72,15 @@
 			</div>
 		</div>
 
-		<div class="flex w-full justify-end" data-only="view">
-			<button
-				type="button"
-				id="records-edit"
-				class="pkts-button inline-flex items-center gap-2 border-accent bg-accent text-white"
-			>
-				Edit Metadata
-				<i data-lucide="arrow-right" class="h-5 w-5"></i>
-			</button>
-		</div>
 	</div>
 </section>
 
 <div hx-get="/partials/confirm_modal.html" hx-trigger="load" hx-swap="outerHTML"></div>
 
 <script type="module">
-	// Layout pass for issue #3: the records view for one metadata type, in
-	// three states — view, choose (pick a row), edit (side panel).
+	// Layout pass for issue #3: the records of one metadata type, in two
+	// states — choose (pick a row) and edit (side panel). The read-only view
+	// with an "Edit Metadata" button was dropped from the flow (Johanna, #13).
 	//
 	// Fixed to meta_interface until the list can pass a slug through; the real
 	// source is GET /metadata/{slug}, which today returns every record (paging
@@ -370,7 +354,7 @@
 			.map((rec) => {
 				const selected = rec[RECORD_ID] === selectedId;
 				const cls = [
-					state !== "view" ? "cursor-pointer" : "",
+					"cursor-pointer",
 					selected ? "outline outline-2 -outline-offset-2 outline-primary" : "",
 				]
 					.filter(Boolean)
@@ -383,8 +367,10 @@
 			.join("");
 	}
 
-	function pageButton(label, target, { active = false, disabled = false } = {}) {
-		return `<button type="button" class="pkts-button pkts-small ${active ? "pkts-primary" : "pkts-secondary"}" data-page="${target}"${disabled ? " disabled" : ""}>${label}</button>`;
+	function pageButton(label, targetPage, { active = false, disabled = false } = {}) {
+		return `<button type="button" class="mn-page-tile" data-page="${targetPage}"${
+			active ? ' aria-current="page"' : ""
+		}${disabled ? " disabled" : ""}>${label}</button>`;
 	}
 
 	function renderPager() {
@@ -403,7 +389,7 @@
 		const parts = [pageButton("Prev", page - 1, { disabled: page === 1 })];
 		let prev = 0;
 		for (const n of [...new Set([1, page, total])].sort((a, b) => a - b)) {
-			if (n - prev > 1) parts.push(`<span class="px-1">…</span>`);
+			if (n - prev > 1) parts.push(`<span class="mn-page-gap">…</span>`);
 			parts.push(pageButton(String(n), n, { active: n === page }));
 			prev = n;
 		}
@@ -455,12 +441,11 @@
 		});
 	}
 
-	document.getElementById("records-edit").addEventListener("click", () => setState("choose"));
-	document.getElementById("records-cancel").addEventListener("click", () => setState("view"));
+	document.getElementById("records-cancel").addEventListener("click", () => setState("choose"));
 
 	rowsEl.addEventListener("click", (event) => {
 		const row = event.target.closest("tr[data-id]");
-		if (!row || root.dataset.state === "view") return;
+		if (!row) return;
 		selectedId = row.dataset.id;
 		renderEditor(RECORDS.find((r) => r[RECORD_ID] === selectedId));
 		root.dataset.state = "edit";
@@ -479,22 +464,22 @@
 	});
 
 	// Save → confirm modal with the diff → (one PUT per record, once the API is
-	// wired) → back to view. Records are saved one at a time by team decision.
+	// wired) → back to choosing a row. Records are saved one at a time by team decision.
 	editorEl.addEventListener("submit", (event) => {
 		event.preventDefault();
 		const rec = RECORDS.find((r) => r[RECORD_ID] === selectedId);
 		const rows = currentEdits(rec);
 		if (!rows.length) {
-			setState("view");
+			setState("choose");
 			return;
 		}
 		window.openConfirmModal({
 			title: `Are you sure you want to change content for ${rec[RECORD_ID]}?`,
 			rows,
-			onConfirm: () => setState("view"),
+			onConfirm: () => setState("choose"),
 		});
 	});
 
 	renderHead();
-	setState("view");
+	setState("choose");
 </script>

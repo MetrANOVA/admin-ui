@@ -1,4 +1,4 @@
-<section class="flex flex-col items-center gap-4 px-16 pt-[28px] pb-[88px]">
+<section class="flex flex-col items-center gap-4 px-[max(4rem,9.6vw)] pt-[28px] pb-[88px]">
 	<div class="flex w-full max-w-[1348px] flex-col items-center gap-6">
 		<div class="flex items-center justify-center gap-3">
 			<i data-lucide="file-json" class="h-8 w-8 shrink-0 text-copy"></i>
@@ -19,7 +19,7 @@
 		</label>
 
 		<div class="w-full overflow-x-auto">
-			<table class="pkts-data-table w-full">
+			<table class="pkts-data-table mn-data-table w-full">
 				<thead>
 					<tr>
 						<th scope="col">
@@ -81,7 +81,7 @@
 					<tr>
 						<td colspan="3">
 							<div
-								class="flex flex-wrap items-center justify-center gap-2"
+								class="mn-page-tiles"
 								id="metadata-pager"
 							></div>
 						</td>
@@ -168,10 +168,9 @@
 	}
 
 	function pageButton(label, targetPage, { active = false, disabled = false } = {}) {
-		const variant = active ? "pkts-primary" : "pkts-secondary";
-		return `<button type="button" class="pkts-button pkts-small ${variant}" data-page="${targetPage}"${
-			disabled ? " disabled" : ""
-		}>${label}</button>`;
+		return `<button type="button" class="mn-page-tile" data-page="${targetPage}"${
+			active ? ' aria-current="page"' : ""
+		}${disabled ? " disabled" : ""}>${label}</button>`;
 	}
 
 	function renderPager(totalPages) {
@@ -187,7 +186,7 @@
 		let previous = 0;
 		for (const n of shown) {
 			if (n - previous > 1) {
-				parts.push(`<span class="px-1 text-copy-alt">…</span>`);
+				parts.push(`<span class="mn-page-gap">…</span>`);
 			}
 			parts.push(pageButton(String(n), n, { active: n === page }));
 			previous = n;
