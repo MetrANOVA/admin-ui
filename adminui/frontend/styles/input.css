@@ -731,7 +731,7 @@ json-form .horizontal-layout-item {
 .packets .pkts-data-table.mn-data-table {
 	--background-color: var(--mn-table-surface);
 	--background-dark-color: var(--mn-table-surface);
-	--header-background-color: var(--secondary);
+	--header-background-color: var(--copy-alt);
 	--header-copy-color: var(--background);
 	--body-copy-color: var(--copy);
 	--table-row-even-background-color: transparent;
@@ -746,6 +746,13 @@ json-form .horizontal-layout-item {
 }
 .packets .mn-data-table thead th .labelWrapper {
 	color: var(--header-copy-color);
+	white-space: nowrap;
+}
+/* Long values are cut with an ellipsis; the full text is in the cell's title */
+.packets .mn-data-table tbody td {
+	max-width: 20rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 /* Selected row: primary stroke on a primary tint of the row surface */

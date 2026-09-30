@@ -5,7 +5,7 @@
 >
 	<div class="flex w-full max-w-[1348px] flex-col items-center gap-6">
 		<!-- No back button: the final mockups drop it; the nav leads back to the list -->
-		<h1 class="h1 display2" id="records-title">meta_interface</h1>
+		<h1 class="h1 display2 !font-sans" id="records-title">meta_interface</h1>
 
 		<div class="flex w-full flex-col gap-4 rounded border border-shadow bg-surface1 p-8">
 			<p class="text-base text-copy-alt" data-only="choose">Choose a row to edit</p>
@@ -40,7 +40,7 @@
 					height of its own and the two line up top and bottom.
 				-->
 				<form
-					class="relative w-[46%] shrink-0 rounded-[12px] bg-surface2"
+					class="relative min-w-0 flex-1 rounded-[12px] bg-surface2"
 					id="records-editor"
 					data-only="edit"
 				>
@@ -64,7 +64,9 @@
 				<button
 					type="submit"
 					form="records-editor"
-					class="pkts-button inline-flex items-center gap-2 border-success bg-success text-white"
+					id="records-save"
+					disabled
+					class="pkts-button inline-flex items-center gap-2 border-success bg-success text-white disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					<i data-lucide="save" class="h-5 w-5"></i>
 					Save
@@ -361,7 +363,7 @@
 					.join(" ");
 				return `<tr data-id="${rec[RECORD_ID]}" class="${cls}"${selected ? ' aria-selected="true"' : ""}>${COLUMNS.map(
 					(col) =>
-						`<td data-parent="${col.name}" class="mono whitespace-nowrap">${show(rec[col.name])}</td>`,
+						`<td data-parent="${col.name}" class="mono whitespace-nowrap" title="${escapeAttr(show(rec[col.name]))}">${show(rec[col.name])}</td>`,
 				).join("")}</tr>`;
 			})
 			.join("") + fillerRows(slice.length);
@@ -407,14 +409,27 @@
 		pagerEl.innerHTML = parts.join("");
 	}
 
+	function escapeAttr(value) {
+		return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+	}
+
+	// Save stays disabled until something in the panel differs from the record.
+	const saveEl = document.getElementById("records-save");
+	function syncSave() {
+		const rec = RECORDS.find((r) => r[RECORD_ID] === selectedId);
+		saveEl.disabled = !rec || currentEdits(rec).length === 0;
+	}
+	editorEl.addEventListener("input", syncSave);
+	editorEl.addEventListener("change", syncSave);
+
 	function renderEditor(rec) {
 		fieldsEl.innerHTML = COLUMNS.filter((col) => !RESERVED.has(col.name))
 			.map((col) => {
 				const value = rec[col.name];
 				if (col.type === "Bool") {
-					return `<label class="flex items-center gap-3 text-base"><input type="checkbox" name="${col.name}" ${value ? "checked" : ""} class="h-5 w-5" /><span class="mono">${col.name}</span></label>`;
+					return `<label class="flex items-center gap-3 text-base"><input type="checkbox" name="${col.name}" ${value ? "checked" : ""} class="h-5 w-5" /><span class="mono text-copy">${col.name}</span></label>`;
 				}
-				return `<div class="flex flex-col gap-1"><label for="f-${col.name}" class="label-1 mono text-secondary">${col.name}</label><div class="pkts-input-text"><input id="f-${col.name}" name="${col.name}" value="${show(value).replace(/"/g, "&quot;")}" /></div></div>`;
+				return `<div class="flex flex-col gap-1"><label for="f-${col.name}" class="label-1 mono text-copy">${col.name}</label><div class="pkts-input-text"><input id="f-${col.name}" name="${col.name}" value="${show(value).replace(/"/g, "&quot;")}" /></div></div>`;
 			})
 			.join("");
 	}
@@ -458,6 +473,7 @@
 		if (!row) return;
 		selectedId = row.dataset.id;
 		renderEditor(RECORDS.find((r) => r[RECORD_ID] === selectedId));
+		syncSave();
 		root.dataset.state = "edit";
 		root.querySelectorAll("[data-only]").forEach((el) => {
 			el.style.display = el.dataset.only === "edit" ? "" : "none";
