@@ -738,9 +738,21 @@ json-form .horizontal-layout-item {
 	--table-row-hover-background-color: color-mix(in srgb, var(--copy-alt) 30%, transparent);
 	--corner-radius: 8px;
 }
-/* Packets hard-codes the header label colour */
+/* Packets hard-codes the header label colour, and caps header cells at 100px,
+   which lets long column names run into the next column */
+.packets .mn-data-table thead th {
+	max-width: none;
+	max-height: none;
+}
 .packets .mn-data-table thead th .labelWrapper {
 	color: var(--header-copy-color);
+	white-space: nowrap;
+}
+/* Selected row: primary stroke on a primary tint of the row surface */
+.packets .mn-data-table tbody tr[aria-selected="true"] {
+	background-color: color-mix(in srgb, var(--primary) 35%, var(--mn-table-surface));
+	outline: 2px solid var(--primary);
+	outline-offset: -2px;
 }
 .packets .mn-data-table tbody tr:active {
 	background-color: color-mix(in srgb, var(--copy-alt) 70%, transparent);

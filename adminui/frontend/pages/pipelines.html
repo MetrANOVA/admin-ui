@@ -1,4 +1,4 @@
-<section class="flex flex-col items-center gap-4 px-[max(4rem,9.6vw)] pt-[28px] pb-[88px]">
+<section class="flex flex-col items-center gap-4 px-[max(6rem,9.6vw)] pt-16 pb-[88px]">
 	<div class="flex w-full max-w-[1348px] flex-col items-center gap-6">
 		<div class="flex items-center justify-center gap-3">
 			<i data-lucide="workflow" class="h-8 w-8 shrink-0 text-copy"></i>
@@ -29,7 +29,7 @@
 			</a>
 		</div>
 
-		<div class="w-full overflow-x-auto">
+		<div class="mt-4 w-full overflow-x-auto">
 			<table class="pkts-data-table mn-data-table w-full">
 				<thead>
 					<tr>
@@ -54,7 +54,7 @@
 								</button>
 							</div>
 						</th>
-						<th scope="col" class="w-full">
+						<th scope="col">
 							<div class="labelWrapper">Pipeline Name</div>
 						</th>
 						<!-- Created By is unconfirmed — the API has no concept of users (see #3). -->
@@ -244,8 +244,19 @@
 		render();
 	});
 
+	// The icon shows the current order: up = ascending, down = descending.
+	function renderSortIcon() {
+		const icon = sortDir === 1 ? "arrow-up" : sortDir === -1 ? "arrow-down" : "chevrons-up-down";
+		sortEl.innerHTML = `<i data-lucide="${icon}" class="h-4 w-4"></i>`;
+		sortEl.setAttribute(
+			"aria-label",
+			sortDir === 1 ? "Sorted by type, ascending" : sortDir === -1 ? "Sorted by type, descending" : "Sort by type",
+		);
+	}
+
 	sortEl.addEventListener("click", () => {
 		sortDir = sortDir === 1 ? -1 : 1;
+		renderSortIcon();
 		page = 1;
 		render();
 	});
