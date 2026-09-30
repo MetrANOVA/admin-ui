@@ -1,5 +1,5 @@
 <section
-	class="flex flex-col items-center gap-4 px-[max(4rem,9.6vw)] pt-[28px] pb-[88px]"
+	class="flex flex-col items-center gap-4 px-[max(6rem,9.6vw)] pt-16 pb-[88px]"
 	id="records"
 	data-state="choose"
 >
@@ -11,7 +11,7 @@
 			<p class="text-base text-copy-alt" data-only="choose">Choose a row to edit</p>
 
 			<div class="flex w-full items-stretch gap-6">
-				<div class="min-w-0 flex-1 overflow-x-auto" id="records-table-wrap">
+				<div class="min-w-0 flex-1 overflow-x-auto rounded-[8px]" id="records-table-wrap">
 					<table class="pkts-data-table mn-data-table w-full">
 						<thead id="records-head"></thead>
 						<tbody id="records-rows"></tbody>
@@ -355,16 +355,26 @@
 				const selected = rec[RECORD_ID] === selectedId;
 				const cls = [
 					"cursor-pointer",
-					selected ? "outline outline-2 -outline-offset-2 outline-primary" : "",
+
 				]
 					.filter(Boolean)
 					.join(" ");
-				return `<tr data-id="${rec[RECORD_ID]}" class="${cls}">${COLUMNS.map(
+				return `<tr data-id="${rec[RECORD_ID]}" class="${cls}"${selected ? ' aria-selected="true"' : ""}>${COLUMNS.map(
 					(col) =>
 						`<td data-parent="${col.name}" class="mono whitespace-nowrap">${show(rec[col.name])}</td>`,
 				).join("")}</tr>`;
 			})
-			.join("");
+			.join("") + fillerRows(slice.length);
+	}
+
+	// A short last page is padded to a full page, so the table — and the edit
+	// panel sized by it — keep the same height on every page.
+	function fillerRows(count) {
+		if (RECORDS.length <= PAGE_SIZE || count >= PAGE_SIZE) return "";
+		const row = `<tr aria-hidden="true" class="pointer-events-none">${COLUMNS.map(
+			() => `<td class="mono whitespace-nowrap">&nbsp;</td>`,
+		).join("")}</tr>`;
+		return row.repeat(PAGE_SIZE - count);
 	}
 
 	function pageButton(label, targetPage, { active = false, disabled = false } = {}) {
