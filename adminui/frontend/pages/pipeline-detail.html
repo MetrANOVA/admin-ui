@@ -23,7 +23,7 @@
 				hx-get="/pages/pipelines.html"
 				hx-target="#main-content"
 				hx-push-url="/pipelines"
-				class="absolute left-0 inline-flex h-9 w-16 items-center justify-center rounded-full bg-copy-alt text-surface2"
+				class="absolute left-0 inline-flex h-9 w-16 items-center justify-center rounded-full bg-copy-alt !text-surface2"
 				aria-label="Back to Pipelines"
 			>
 				<i data-lucide="undo-2" class="h-5 w-5"></i>
@@ -33,16 +33,10 @@
 		<div class="flex w-full flex-col gap-8 rounded border border-shadow bg-surface1 px-10 py-8">
 			<div class="flex w-full items-center justify-center gap-3 self-stretch">
 				<i data-lucide="workflow" class="h-8 w-8 shrink-0 text-copy"></i>
-				<h1 class="h2 !font-sans" id="pipeline-title">…</h1>
+				<h1 class="h2 !mb-0 !w-auto !font-sans" id="pipeline-title">…</h1>
 			</div>
 
-			<!--
-				The mockup labels these Consumer Type / Consumer Config and draws
-				IF/THEN mapping rules — that is the older transformer schema. The API's
-				transformer has definition_ref, match_field and ordered columns (target,
-				match_value, operation, config), so the fields below follow that and keep
-				the mockup's grouping.
-			-->
+			<!-- Fields and rule layout follow the updated mockup (9 Oct), which uses the API's transformer schema. -->
 			<dl class="grid grid-cols-1 gap-x-12 gap-y-5 md:grid-cols-2" id="pipeline-facts">
 				<div>
 					<dt class="label text-copy-alt">Table Name</dt>
@@ -56,11 +50,7 @@
 					<dt class="label text-copy-alt">Description</dt>
 					<dd class="max-w-prose text-base text-copy" data-fact="description"></dd>
 				</div>
-				<div>
-					<dt class="label text-copy-alt">Type</dt>
-					<dd class="mt-1" data-fact="type"></dd>
-				</div>
-				<div>
+				<div class="md:col-span-2">
 					<dt class="label text-copy-alt">Match Field</dt>
 					<dd class="text-base text-copy" data-fact="match_field"></dd>
 				</div>
@@ -71,6 +61,18 @@
 				<div class="flex flex-col gap-4" id="pipeline-rules"></div>
 			</div>
 
+			<div class="flex justify-end">
+				<a
+					href="/define-pipeline"
+					hx-get="/pages/define-pipelines.html"
+					hx-target="#main-content"
+					hx-push-url="/define-pipeline"
+					class="inline-flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-semibold !text-white !no-underline transition hover:brightness-95"
+				>
+					Edit Pipeline
+					<i data-lucide="arrow-right" class="h-5 w-5"></i>
+				</a>
+			</div>
 			<div class="flex flex-col gap-3">
 				<p class="label text-copy-alt">Preview</p>
 				<div class="pkts-code-block pipeline-code max-h-[520px]">
@@ -90,18 +92,6 @@
 				</div>
 			</div>
 
-			<div class="flex justify-end">
-				<a
-					href="/define-pipeline"
-					hx-get="/pages/define-pipelines.html"
-					hx-target="#main-content"
-					hx-push-url="/define-pipeline"
-					class="inline-flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-semibold !text-white !no-underline transition hover:brightness-95"
-				>
-					Edit Pipeline
-					<i data-lucide="arrow-right" class="h-5 w-5"></i>
-				</a>
-			</div>
 		</div>
 	</div>
 </section>
@@ -112,22 +102,6 @@
 	// example from the API repo; the rest are placeholders so the list has
 	// something to open. ?id= picks the pipeline; unknown ids fall back to the
 	// first one.
-	const TYPES = {
-		data: { label: "Data Table", icon: "table-2" },
-		metadata: { label: "Metadata Table", icon: "file-json" },
-	};
-
-	const OPERATIONS = {
-		field: "Copy field",
-		static: "Static value",
-		concat: "Concatenate",
-		regex_extract: "Regex extract",
-		regex_replace: "Regex replace",
-		translate: "Translate",
-		postfix: "Postfix expression",
-		cache_lookup: "Cache lookup",
-	};
-
 	const column = (id, target_column, match_value, operation, config, order) => ({
 		id,
 		target_column,
@@ -173,58 +147,50 @@
 	const pipeline =
 		PIPELINES[requested] ||
 		Object.assign({}, PIPELINES.all_interfaces, requested ? { id: requested, name: requested } : {});
-	const type = pipeline.definition_ref.startsWith("meta_") ? "metadata" : "data";
-
 	document.getElementById("pipeline-title").textContent = pipeline.name;
 
 	for (const dd of document.querySelectorAll("[data-fact]")) {
-		const key = dd.dataset.fact;
-		if (key === "type") {
-			const { label, icon } = TYPES[type];
-			dd.innerHTML = `<span class="pkts-chip cursor-default"><i data-lucide="${icon}" class="h-4 w-4"></i>${label}</span>`;
-		} else {
-			dd.textContent = pipeline[key] || "—";
-		}
+		dd.textContent = pipeline[dd.dataset.fact] || "—";
 	}
 
-	// The IF/THEN line is the mockup's reading of a column: the transformer
-	// applies when match_field equals the column's match_value, then the
-	// operation's source lands in target_column.
+	function escapeHtml(value) {
+		return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+	}
+
+	// One labelled value, the small label above it as in the mockup.
+	function pair(label, value) {
+		return `<span class="flex flex-col"><span class="text-xs text-copy-alt">${label}</span><span>${escapeHtml(value)}</span></span>`;
+	}
+
+	// A rule reads: WRITE TO <column> WHEN <match field> = <value> [AND <vendor
+	// field> = <value>] THEN <operation> <config> [ELSE <default>]. The vendor
+	// condition and the default are optional and only shown when set.
 	function ruleCard(col, index) {
-		const source = col.config.source ?? col.config.field ?? col.config.fields?.join(", ") ?? "—";
-		const configRows = Object.entries(col.config)
-			.map(
-				([key, value]) => `
-					<div class="flex gap-2">
-						<span class="w-28 shrink-0 text-copy-alt">${key}</span>
-						<code>${typeof value === "string" ? value : JSON.stringify(value)}</code>
-					</div>
-				`,
-			)
-			.join("");
+		const keyword = (word) => `<span class="pt-4 font-mono text-sm text-copy-alt">${word}</span>`;
+		const vendor =
+			col.vendor_match_field || col.vendor_match_value
+				? `${keyword("AND")}${pair("Vendor Field", col.vendor_match_field ?? "—")}<span class="pt-4">=</span>${pair("Vendor Value", col.vendor_match_value ?? "—")}`
+				: "";
+		const fallback =
+			col.default_value !== undefined && col.default_value !== null && col.default_value !== ""
+				? `<div class="flex flex-wrap items-start gap-x-4 gap-y-2">${keyword("ELSE")}${pair("Default Value", col.default_value)}</div>`
+				: "";
 		return `
-			<article class="relative flex flex-col gap-4 rounded border border-dashed border-copy-alt px-6 pb-5 pt-7">
+			<article class="relative flex flex-col gap-4 rounded border border-dashed border-copy-alt px-6 pb-5 pt-7 text-base text-copy">
 				<span class="absolute -top-2.5 left-4 bg-surface1 px-1 text-xs font-semibold uppercase tracking-wide text-accent">Rule ${index + 1}</span>
-				<div class="grid grid-cols-[3.5rem_1fr_1fr_1fr] items-end gap-x-6 gap-y-3 text-base text-copy">
-					<span class="font-semibold">IF</span>
-					<span><span class="block label text-copy-alt">Field</span>${pipeline.match_field}</span>
-					<span><span class="block label text-copy-alt">Operator</span>=</span>
-					<span><span class="block label text-copy-alt">Value</span>${col.match_value}</span>
-					<span class="font-semibold">THEN</span>
-					<span><span class="block label text-copy-alt">Source</span>${source}</span>
-					<span class="font-semibold">TO</span>
-					<span><span class="block label text-copy-alt">Column</span>${col.target_column}</span>
+				<div class="flex flex-wrap items-start gap-x-4 gap-y-2">
+					${keyword("WRITE TO")}${pair("Target Column", col.target_column)}
+					${keyword("WHEN")}${pair("Match Field", pipeline.match_field)}<span class="pt-4">=</span>${pair("Match Value", col.match_value ?? "—")}
+					${vendor}
 				</div>
-				<div class="flex flex-col gap-2">
-					<p class="label text-copy">Transform</p>
-					<div class="flex flex-col gap-1 pl-4 text-sm text-copy">
-						<div class="flex gap-2">
-							<span class="w-28 shrink-0 text-copy-alt">operation</span>
-							<span>${OPERATIONS[col.operation] || col.operation} <code>${col.operation}</code></span>
-						</div>
-						${configRows}
-					</div>
+				<div class="flex flex-wrap items-start gap-x-4 gap-y-2">
+					${keyword("THEN")}${pair("Operation", col.operation)}
+					<span class="flex min-w-0 flex-col">
+						<span class="text-xs text-copy-alt">Config</span>
+						<pre class="m-0 overflow-x-auto font-mono text-sm leading-relaxed">${escapeHtml(JSON.stringify(col.config, null, 4))}</pre>
+					</span>
 				</div>
+				${fallback}
 			</article>
 		`;
 	}
