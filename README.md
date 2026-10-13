@@ -33,6 +33,15 @@ make run-api
 
 FastAPI will be running at `http://localhost:8000`.
 
+The API allows requests from `http://localhost:5001` and `http://127.0.0.1:5001`;
+serve the frontend elsewhere and list it in `ADMINUI_CORS_ORIGINS`
+(comma-separated).
+
+The mock API also serves the list endpoints the tables use (`/api/metadata/`,
+`/api/metadata/{slug}`, `/api/transformers/`). They take `limit`, `offset`, `q`,
+`sort` and `order` and report the total in an `X-Total-Count` header, which is
+the contract proposed for the real API in MetrANOVA/api#42.
+
 ### Step Two: Start the frontend
 
 The frontend is plain HTML/HTMX, styled with Tailwind + the Packets design system, served by a small Python static server.
