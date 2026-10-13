@@ -25,18 +25,10 @@
 						<th scope="col">
 							<div class="labelWrapper">Table Name</div>
 						</th>
-						<!-- Created By is unconfirmed — the API has no concept of users. -->
+						<!-- Created By is unconfirmed — the API has no concept of users, so it cannot be filled or sorted. -->
 						<th scope="col">
 							<div class="labelWrapper">
 								<span>Created By</span>
-								<button
-									type="button"
-									class="inline-flex text-inherit opacity-70 transition-opacity hover:opacity-100"
-									data-sort="created_by"
-									aria-label="Sort by created by"
-								>
-									<i data-lucide="chevrons-up-down" class="h-4 w-4"></i>
-								</button>
 								<button
 									type="button"
 									class="inline-flex text-inherit opacity-70 transition-opacity hover:opacity-100"
@@ -54,6 +46,7 @@
 									type="button"
 									class="inline-flex text-inherit opacity-70 transition-opacity hover:opacity-100"
 									data-sort="created_at"
+									data-label="created date"
 									aria-label="Sort by created date"
 								>
 									<i data-lucide="chevrons-up-down" class="h-4 w-4"></i>
@@ -80,10 +73,7 @@
 				<tfoot id="metadata-foot">
 					<tr>
 						<td colspan="3">
-							<div
-								class="mn-page-tiles"
-								id="metadata-pager"
-							></div>
+							<div class="mn-pager" id="metadata-pager"></div>
 						</td>
 					</tr>
 				</tfoot>
@@ -95,131 +85,40 @@
 <div hx-get="/partials/confirm_modal.html" hx-trigger="load" hx-swap="outerHTML"></div>
 
 <script type="module">
-	// Layout pass for issue #3. Rows are placeholder data.
-	//
-	// The paging and search below are a stand-in. Paging, search and sorting are
-	// going onto the API (confirmed with the team) — once GET /metadata/ takes
-	// limit/offset/q/sort and returns a total, this drops out in favour of real
-	// requests. Don't build on it.
-	//
-	// Created Date is staying. Created By is not confirmed and may not be
-	// available at all; if it goes, field_count or identifier are already in the
-	// response and say more about a table than who made it.
-	const PAGE_SIZE = 12;
+	import { PagedTable, escapeHtml, shortDate } from "/scripts/paged-table.js";
 
-	// Names taken from the mockup so the shape of the page is visible before the
-	// real endpoint is wired up (issue #9).
-	const PLACEHOLDER = [
-		"meta_as",
-		"meta_circuit",
-		"meta_device",
-		"meta_interface",
-		"meta_ip",
-		"meta_organization",
-		"meta_esdb_org_name_dict",
-		"meta_interface_esdb",
-		"meta_ip_cric",
-		"meta_ip_esdb",
-		"meta_ip_scireg",
-		"meta_kvp",
-		"meta_pop",
-		"meta_service",
-		"meta_tag",
-	].map((name) => ({ name, created_by: "jlee@es.net", created_at: "07/13/27" }));
-
-	const rowsEl = document.getElementById("metadata-rows");
-	const pagerEl = document.getElementById("metadata-pager");
-	const searchEl = document.getElementById("metadata-search");
-	const footEl = document.getElementById("metadata-foot");
-
-	let query = "";
-	let page = 1;
-
-	function visibleRows() {
-		const q = query.trim().toLowerCase();
-		return q ? PLACEHOLDER.filter((row) => row.name.toLowerCase().includes(q)) : PLACEHOLDER;
-	}
-
-	function renderRows(rows) {
-		if (!rows.length) {
-			rowsEl.innerHTML = `<tr><td colspan="3" class="text-center text-copy-alt">No tables match that search.</td></tr>`;
-			return;
-		}
-		rowsEl.innerHTML = rows
-			.map(
-				(row) => `
-					<tr
-						class="cursor-pointer"
-						hx-get="/pages/metadata-records.html"
-						hx-target="#main-content"
-						hx-push-url="/metadata-records"
-					>
-						<td data-parent="Table Name">${row.name}</td>
-						<td data-parent="Created By">${row.created_by}</td>
-						<td data-parent="Created Date">${row.created_at}</td>
-					</tr>
-				`,
-			)
-			.join("");
-		// Rows are rendered after htmx scanned the page, so their hx-* need processing.
-		if (window.htmx) {
-			window.htmx.process(rowsEl);
-		}
-	}
-
-	function pageButton(label, targetPage, { active = false, disabled = false } = {}) {
-		return `<button type="button" class="mn-page-tile" data-page="${targetPage}"${
-			active ? ' aria-current="page"' : ""
-		}${disabled ? " disabled" : ""}>${label}</button>`;
-	}
-
-	function renderPager(totalPages) {
-		// Packets sets display:table-footer-group on tfoot, which outranks
-		// Tailwind's .hidden, so it has to be hidden inline.
-		footEl.style.display = totalPages <= 1 ? "none" : "";
-		if (totalPages <= 1) {
-			pagerEl.innerHTML = "";
-			return;
-		}
-		const parts = [pageButton("Prev", page - 1, { disabled: page === 1 })];
-		const shown = [...new Set([1, page, totalPages])].sort((a, b) => a - b);
-		let previous = 0;
-		for (const n of shown) {
-			if (n - previous > 1) {
-				parts.push(`<span class="mn-page-gap">…</span>`);
-			}
-			parts.push(pageButton(String(n), n, { active: n === page }));
-			previous = n;
-		}
-		parts.push(pageButton("Next", page + 1, { disabled: page === totalPages }));
-		pagerEl.innerHTML = parts.join("");
-	}
-
-	function render() {
-		const rows = visibleRows();
-		const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
-		page = Math.min(page, totalPages);
-		renderRows(rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE));
-		renderPager(totalPages);
-		if (window.lucide) {
-			window.lucide.createIcons();
-		}
-	}
-
-	searchEl.addEventListener("input", (event) => {
-		query = event.target.value;
-		page = 1;
-		render();
+	// Metadata types, one page at a time from GET /metadata/. Paging, search and
+	// sorting are done by the API (limit / offset / q / sort / order, total in
+	// X-Total-Count — MetrANOVA/api#42); the mock backend implements the same
+	// contract. Created Date is `created_at`, which the real API does not return
+	// yet. Created By has no source at all and shows a dash.
+	const table = new PagedTable({
+		url: `${window.ADMINUI_API_BASE}/metadata/`,
+		tableEl: document.querySelector("#metadata-rows").closest("table"),
+		bodyEl: document.getElementById("metadata-rows"),
+		pagerEl: document.getElementById("metadata-pager"),
+		searchEl: document.getElementById("metadata-search"),
+		columnCount: () => 3,
+		emptyText: "No tables match that search.",
+		renderRows: (types) =>
+			types
+				.map((type) => {
+					const name = escapeHtml(`meta_${type.slug}`);
+					return `
+						<tr
+							class="cursor-pointer"
+							hx-get="/pages/metadata-records.html"
+							hx-target="#main-content"
+							hx-push-url="/metadata-records?type=${encodeURIComponent(type.slug)}"
+						>
+							<td data-parent="Table Name" title="${name}">${name}</td>
+							<td data-parent="Created By" title="Not provided by the API yet">—</td>
+							<td data-parent="Created Date">${shortDate(type.created_at || type.updated_at)}</td>
+						</tr>
+					`;
+				})
+				.join(""),
 	});
 
-	pagerEl.addEventListener("click", (event) => {
-		const button = event.target.closest("[data-page]");
-		if (!button || button.disabled) {
-			return;
-		}
-		page = Number(button.dataset.page);
-		render();
-	});
-
-	render();
+	table.load();
 </script>
