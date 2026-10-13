@@ -487,11 +487,13 @@
 			showErrors(["Cannot reach the API."]);
 			return;
 		}
-		setState("choose");
-		table.load();
+		// On to the Success view for this table, as the mockups draw it. The URL
+		// goes first, so the page finds its ?type= when it loads.
+		window.history.pushState({}, "", `/metadata-saved?type=${encodeURIComponent(slug)}`);
+		window.htmx.ajax("GET", "/pages/metadata-saved.html", { target: "#main-content", swap: "innerHTML" });
 	}
 
-	// Save → confirm dialog with the diff → PUT → back to choosing a row.
+	// Save → confirm dialog with the diff → PUT → Success view.
 	editorEl.addEventListener("submit", (event) => {
 		event.preventDefault();
 		const rec = selected();
