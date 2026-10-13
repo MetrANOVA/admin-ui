@@ -711,3 +711,98 @@ json-form .horizontal-layout-item {
 	margin: 0;
 	white-space: nowrap;
 }
+
+
+/* =========================================================
+   Data tables, as drawn in the Admin Console mockups
+   (opt in with .mn-data-table on a .pkts-data-table)
+   ========================================================= */
+
+/* Row surface: white / black, the mockups' Actions/Surface/Default/Rest */
+.packets {
+	--mn-table-surface: #ffffff;
+}
+.packets[data-theme="dark"] {
+	--mn-table-surface: #000000;
+}
+
+/* Packets drives its table through these variables; one more class outranks
+   both its light defaults and its .dark overrides. */
+.packets .pkts-data-table.mn-data-table {
+	--background-color: var(--mn-table-surface);
+	--background-dark-color: var(--mn-table-surface);
+	--header-background-color: var(--copy-alt);
+	--header-copy-color: var(--background);
+	--body-copy-color: var(--copy);
+	--table-row-even-background-color: transparent;
+	--table-row-hover-background-color: color-mix(in srgb, var(--copy-alt) 30%, transparent);
+	--corner-radius: 8px;
+}
+/* Packets hard-codes the header label colour, and caps header cells at 100px,
+   which lets long column names run into the next column */
+.packets .mn-data-table thead th {
+	max-width: none;
+	max-height: none;
+}
+.packets .mn-data-table thead th .labelWrapper {
+	color: var(--header-copy-color);
+	white-space: nowrap;
+}
+/* Long values are cut with an ellipsis; the full text is in the cell's title */
+.packets .mn-data-table tbody td {
+	max-width: 20rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+/* Selected row: primary stroke on a primary tint of the row surface */
+.packets .mn-data-table tbody tr[aria-selected="true"] {
+	background-color: color-mix(in srgb, var(--primary) 35%, var(--mn-table-surface));
+	outline: 2px solid var(--primary);
+	outline-offset: -2px;
+}
+.packets .mn-data-table tbody tr:active {
+	background-color: color-mix(in srgb, var(--copy-alt) 70%, transparent);
+}
+
+/* Pager tiles in the table footer */
+.mn-page-tiles {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+}
+.mn-page-tile {
+	min-width: 2rem;
+	height: 1.75rem;
+	padding: 0 0.625rem;
+	border: 0;
+	border-radius: 2px;
+	background: var(--mn-table-surface);
+	color: var(--copy);
+	font-size: 0.875rem;
+	line-height: 1.75rem;
+	cursor: pointer;
+}
+.mn-page-tile:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--mn-table-surface) 80%, var(--primary));
+}
+.mn-page-tile[aria-current="page"] {
+	background: var(--primary);
+	color: #ffffff;
+}
+.mn-page-tile:disabled {
+	cursor: default;
+	opacity: 0.5;
+}
+.mn-page-gap {
+	min-width: 2rem;
+	height: 1.75rem;
+	border-radius: 2px;
+	background: var(--mn-table-surface);
+	color: var(--copy);
+	font-size: 0.875rem;
+	line-height: 1.75rem;
+	text-align: center;
+}
