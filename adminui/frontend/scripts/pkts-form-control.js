@@ -1,3 +1,6 @@
+const SWITCH_ON = "on"; // NEW
+const SWITCH_OFF = "off"; // NEW
+
 class PktsFormControl extends HTMLElement {
 	static formAssociated = true;
 
@@ -444,8 +447,14 @@ class PktsFormControl extends HTMLElement {
 		this._syncControlState();
 	}
 
+	// CHANGED: switches and checkboxes get `checked`, not `value`
 	_syncValue() {
 		if (!this._control) return;
+
+		if (this._isToggle()) {
+			this._control.checked = this._isOn(this._value);
+			return;
+		}
 
 		this._control.value = this._value;
 	}
@@ -503,6 +512,40 @@ class PktsFormControl extends HTMLElement {
 	}
 
 	/*
+	 * Switch / checkbox support (NEW)
+	 */
+
+	_isToggle() {
+		return /switch|checkbox/i.test(this._componentName);
+	}
+
+	_isOn(value) {
+		return value === true || value === SWITCH_ON || value === "true" || value === 1;
+	}
+
+	// Real checked state of the inner control, or undefined if it can't be found
+	_readChecked(event) {
+		// 1. The element that fired the event (the native input, even inside shadow DOM)
+		const source = event?.composedPath?.().find((el) => typeof el?.checked === "boolean");
+		if (source) return source.checked;
+
+		// 2. The pkts-* control's own property
+		if (typeof this._control?.checked === "boolean") return this._control.checked;
+
+		// 3. Event detail
+		if (typeof event?.detail?.checked === "boolean") return event.detail.checked;
+		if (typeof event?.detail?.value === "boolean") return event.detail.value;
+
+		// 4. A checkbox inside the control
+		const inner =
+			this._control?.querySelector?.("input[type='checkbox']") ??
+			this._control?.shadowRoot?.querySelector?.("input[type='checkbox']");
+		if (typeof inner?.checked === "boolean") return inner.checked;
+
+		return undefined;
+	}
+
+	/*
 	 * Events
 	 */
 
@@ -529,6 +572,7 @@ class PktsFormControl extends HTMLElement {
 		this._control.removeEventListener("blur", this._handleBlur, true);
 	}
 
+	// CHANGED: toggles read `checked` and emit "on" / "off"
 	_handleChange(event) {
 		/*
 		 * Prevent the original inner event from also reaching the
@@ -536,7 +580,25 @@ class PktsFormControl extends HTMLElement {
 		 */
 		event.stopPropagation();
 
-		const value = this._getEventValue(event);
+		let value;
+		let checked;
+
+		if (this._isToggle()) {
+			checked = this._readChecked(event);
+
+			// Can't tell the state, so don't guess and never fall back to "on"
+			if (checked === undefined) {
+				console.warn(`[${this.name}] could not read checked state`, event);
+				return;
+			}
+
+			value = checked ? SWITCH_ON : SWITCH_OFF;
+
+			// Same value as before: this is one of the duplicate inner events
+			if (value === this._value) return;
+		} else {
+			value = this._getEventValue(event);
+		}
 
 		this._value = value;
 		this._dirty = true;
@@ -552,6 +614,7 @@ class PktsFormControl extends HTMLElement {
 				composed: true,
 				detail: {
 					value,
+					...(checked !== undefined ? { checked } : {}),
 					originalEvent: event,
 				},
 			}),
@@ -666,10 +729,13 @@ class PktsFormControl extends HTMLElement {
 		this.disabled = disabled;
 	}
 
+	// CHANGED: a reset turns a switch off instead of writing ""
 	formResetCallback() {
 		this._dirty = false;
 
-		this.value = this._controlProps.defaultValue ?? this._controlProps.value ?? "";
+		this.value = this._isToggle()
+			? SWITCH_OFF
+			: this._controlProps.defaultValue ?? this._controlProps.value ?? "";
 
 		this._syncPresentation();
 		this._syncControlState();

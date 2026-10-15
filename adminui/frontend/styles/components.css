@@ -359,7 +359,7 @@ ps-select-multi[disabled] .form-container .ps-dropdown {
 }
 
 /* ps-select-chip */
-ps-select-chip[disabled] .form-container .ps-dropdown {
+pkts-select-chip[disabled] .form-container .ps-dropdown {
 	display: none;
 }
 

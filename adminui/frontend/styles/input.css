@@ -593,7 +593,7 @@ json-form .vertical-layout {
 	width: 100%;
 	min-width: 0;
 	flex-direction: column;
-	gap: 0.875rem;
+	gap: 1rem;
 }
 
 json-form .horizontal-layout {
@@ -602,7 +602,7 @@ json-form .horizontal-layout {
 	width: 100%;
 	min-width: 0;
 	grid-template-columns: repeat(auto-fit, minmax(13.75rem, 1fr));
-	gap: 0.875rem;
+	gap: 1rem;
 	align-items: start;
 }
 
@@ -619,7 +619,7 @@ json-form .horizontal-layout-item {
 .pipeline-page {
 	display: flex;
 	flex-direction: column;
-	width: min(calc(100% - 2rem), 68.75rem);
+	width: min(calc(100% - 2rem), 80rem);
 	margin-inline: auto;
 	padding-block: 3.5rem 5rem;
 	color: var(--copy);
@@ -641,23 +641,102 @@ json-form .horizontal-layout-item {
 	box-shadow: 0 3px 10px rgb(0 0 0 / 8%);
 }
 
+.pipeline-preview {
+	display: flex;
+	padding: 1.5rem 2rem;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 1.5rem;
+	border-radius: 2px;
+	background: var(--background);
+}
+
 /* =========================================================
-   Mapping Rules
+   Switch controls
+   ========================================================= */
+
+.pipeline-json-form .form-container:has(> pkts-input-switch) {
+	flex-direction: row;
+	align-items: center;
+	gap: 0.75rem;
+	min-height: 0;
+	margin-top: var(--heading-offset);
+	width: fit-content;
+}
+
+/* Switch item in a row: shrink to content */
+.pipeline-json-form .horizontal-layout > .horizontal-layout-item[data-role="toggle"] {
+	flex: 0 0 auto;
+	width: fit-content;
+	min-width: max-content;
+}
+
+/* =========================================================
+   Array list: shared layout
    ========================================================= */
 
 .pipeline-json-form .array-list {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+	--heading-offset: 34px;
 }
+
+.pipeline-json-form .array-list-item {
+	display: flex;
+	flex-direction: row;
+}
+
+.array-list-item-toolbar {
+	display: flex;
+	flex-direction: column;
+	order: 9999; /* default: toolbar on the right */
+	margin-left: auto;
+}
+
+.array-list-item-content {
+	width: 100%;
+	min-width: 0;
+}
+
+.array-list-item-children {
+	display: flex;
+	width: 100%;
+	flex-direction: row;
+	gap: 0.75rem;
+}
+
+.array-list-item-children > * {
+	width: 100%;
+	min-width: 0;
+}
+
+fieldset.array-list .array-list-item-label,
+.array-list-no-data {
+	display: none;
+}
+
+fieldset.array-list .array-list-item:has(label) label {
+	font-size: 0.875rem;
+	font-weight: 500;
+	line-height: 1.25rem;
+}
+/* =========================================================
+   Array list: legend (label + Add button)
+   ========================================================= */
 
 .pipeline-json-form .array-list-legend {
 	display: flex;
 	flex-direction: row;
+	direction: ltr;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
 	margin-bottom: 8px;
 }
 
 .pipeline-json-form .array-list-legend .array-list-label {
+	order: 1;
 	display: flex;
 	flex-direction: row;
 	gap: 8px;
@@ -667,47 +746,307 @@ json-form .horizontal-layout-item {
 	white-space: nowrap;
 }
 
-.pipeline-json-form .array-list-item {
+/* Empty list: stack the label above the Add button */
+fieldset.array-list:not(:has(.array-list-item)) legend.array-list-legend {
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+/* Native buttons stay in the DOM (so .click() works) but are hidden */
+.pipeline-json-form button[data-replaced="true"] {
+	display: none;
+}
+
+/* Add button: pill on the right of the header */
+.pipeline-json-form .array-list-legend pkts-button {
+	order: 2;
+}
+
+.pipeline-json-form .array-list-legend pkts-button button,
+.dark .pipeline-json-form .array-list-legend pkts-button button {
+	background-color: var(--secondary);
+	color: var(--default-surface);
+	font-weight: 600;
+	font-size: 14px;
+	padding: 4px 14px;
+	min-height: auto;
+	height: fit-content;
+	border: none;
+	border-radius: 999px;
+}
+
+.pipeline-json-form .array-list-legend pkts-button button:hover {
+	background-color: var(--default-hover);
+}
+
+.pipeline-json-form .array-list-legend pkts-button button:active {
+	background-color: var(--default-active);
+}
+
+.pipeline-json-form .array-list-legend pkts-button button:focus:not(:focus-visible) {
+	background-color: var(--secondary);
+	color: var(--default-surface);
+	box-shadow: none;
+	outline: none;
+}
+
+/* =========================================================
+   Rule card
+   wrapper (lighter panel)
+     └ item (flex row)
+         ├ toolbar  (outside the border)
+         └ content  (dashed card + RULE tab)
+   ========================================================= */
+
+/* Numbers the cards. Scoped to this list so nested lists don't count. */
+.pipeline-json-form fieldset.transformer-columns-list {
+	counter-reset: rule;
+}
+
+.pipeline-json-form .transformer-columns-wrapper {
+	counter-increment: rule;
+	margin-bottom: 0.75rem;
+	padding: 1.75rem 1rem 1rem 0.5rem;
+	background: var(--surface-2);
+	border-radius: 0.5rem;
+}
+
+.pipeline-json-form .transformer-columns-item {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	gap: 1rem;
+}
+
+/* Toolbar: up / down / delete stacked in the left gutter */
+.pipeline-json-form .transformer-columns-item > .array-list-item-toolbar {
+	flex: 0 0 2rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.25rem;
+	padding-top: 1rem;
+	order: 1;
+}
+
+/* Extra space before the delete button */
+.pipeline-json-form .transformer-columns-item > .array-list-item-toolbar > :last-child {
+	margin-top: 0.5rem;
+}
+
+/* Dashed card */
+.pipeline-json-form .transformer-columns-item > .array-list-item-content {
+	position: relative;
+	flex: 1 1 0;
+	min-width: 0;
+	padding: 1.5rem 1.5rem 1.25rem;
+	border: 1px dashed var(--copy-alt);
+	border-radius: 1.5rem;
+	order: 2;
+}
+
+/* "RULE 1", "RULE 2"... straddling the top border */
+.pipeline-json-form .transformer-columns-item > .array-list-item-content::before {
+	content: "RULE " counter(rule);
+	position: absolute;
+	top: -0.8rem;
+	left: 1.5rem;
+	padding: 0.125rem 0.625rem;
+	border-radius: 0.375rem;
+	background: var(--copy-alt);
+	color: var(--default-surface);
+	font-size: 0.875rem;
+	font-weight: 500;
+	line-height: 1.4;
+}
+
+/* Vertical rhythm between rows */
+.pipeline-json-form .transformer-columns-item .vertical-layout {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+/* =========================================================
+   Rows: [ keyword | fields ]
+   Items get data-role from pipeline-jsonform.js:
+   keyword, operator, chip, toggle, then-left, then-right
+   ========================================================= */
+
+/* Fields: share the free space equally */
+.pipeline-json-form .horizontal-layout > .horizontal-layout-item {
+	flex: 1 1 0;
+	width: auto;
+	min-width: 0;
+}
+
+/* Keywords: WRITE TO / IF / AND / THEN / ELSE, one shared width */
+.pipeline-json-form .horizontal-layout > .horizontal-layout-item[data-role="keyword"] {
+	flex: 0 0 auto;
+	width: auto;
+	display: flex;
+	align-items: flex-start;
+	margin-top: var(--heading-offset);
+}
+
+.pipeline-json-form [data-role="keyword"] > .label-element {
+	width: auto !important;
+	margin: 0;
+	color: var(--secondary);
+	font-size: 0.9375rem;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+/* "=" */
+.pipeline-json-form .horizontal-layout > .horizontal-layout-item[data-role="operator"] {
+	flex: 0 0 auto;
+	width: auto;
+	min-width: max-content;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-top: var(--heading-offset);
+	font-size: 32px;
+}
+
+.pipeline-json-form .horizontal-layout > .horizontal-layout-item[data-role="operator"] label {
+	font-size: 1.5rem;
+}
+
+/* =========================================================
+   Match Field pill (IF row)
+   ========================================================= */
+
+.pipeline-json-form .horizontal-layout > .horizontal-layout-item[data-role="chip"] {
+	flex: 0 0 auto;
+	width: auto;
+}
+
+/* Keep the "Match Field" heading, hide the readonly input and its message */
+.pipeline-json-form .pkts-chip,
+.dark .pipeline-json-form .pkts-chip {
+	background-color: var(--default-hover);
+	font-size: 16px;
+	padding: 1rem;
+	border-radius: 99px;
+	min-width: 100%;
+}
+
+/* =========================================================
+   THEN row: [ keyword | Operation | Config ]  (1 : 2)
+   ========================================================= */
+
+.pipeline-json-form .horizontal-layout[data-row="then"] {
+	align-items: stretch;
+}
+
+.pipeline-json-form [data-role="then-left"] {
+	flex: 0 0 auto;
+	width: fit-content;
+	min-width: 0;
 	display: flex;
 	flex-direction: column;
 }
 
-.pipeline-json-form .array-list-item-content {
-	padding: 2.5rem 1.5rem;
-	background-color: var(--surface-2);
-	border-radius: 0.375rem;
-	list-style: none;
-	order: 1;
+.pipeline-json-form [data-role="then-left"] > .vertical-layout {
+	flex: 1;
 }
 
-.pipeline-json-form .array-list-item-toolbar {
-	order: 2;
+/* "+ Add Default Value": pinned to the bottom, in the keyword column
+   (7rem keyword width + 0.75rem gap) */
+.pipeline-json-form [data-role="then-left"] .vertical-layout-item[data-role="toggle"] {
+	margin-top: auto;
+	margin-left: calc(-1 * (7rem + 0.75rem));
 }
 
-.pipeline-json-form .horizontal-layout {
-	display: flex;
-	align-items: stretch;
-	gap: 0.75rem;
+/* Config column: accent bar + caption */
+/* Config body: accent bar below the caption, full height of the row */
+.pipeline-json-form [data-role="config-body"] {
+	flex: 1;
+	padding-left: 1rem;
+	border-left: 3px solid var(--secondary);
 }
 
-.pipeline-json-form .horizontal-layout-item:has(> .label-element:only-child) {
-	display: flex;
-	flex: 0 0 auto;
-	align-self: stretch;
-	align-items: center;
-	justify-content: center;
-
-	width: fit-content;
-	min-width: max-content;
-}
-
-.pipeline-json-form .horizontal-layout-item:has(> .label-element:only-child) > .label-element {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-
-	width: auto !important;
-	height: 100%;
+/* Config caption */
+.pipeline-json-form [data-role="config-caption"] .label-element {
 	margin: 0;
+	font-size: 1rem;
+	font-weight: 500;
 	white-space: nowrap;
+}
+
+/* Smaller labels for the config fields */
+.pipeline-json-form [data-role="then-right"] pkts-input-label {
+	font-size: 0.8125rem;
+}
+
+/* =========================================================
+   Hide empty vertical items
+   ========================================================= */
+.pipeline-json-form
+	.vertical-layout-item:not(:has(:not(.vertical-layout):not(.vertical-layout-item))) {
+	display: none;
+}
+
+/* =========================================================
+   Narrow screens: stack the THEN columns
+   ========================================================= */
+
+@media (max-width: 720px) {
+	.pipeline-json-form .horizontal-layout[data-row="then"] {
+		flex-wrap: wrap;
+	}
+
+	.pipeline-json-form [data-role="then-left"],
+	.pipeline-json-form [data-role="then-right"] {
+		flex: 1 1 100%;
+	}
+
+	.pipeline-json-form [data-role="then-left"] .vertical-layout-item[data-role="toggle"] {
+		margin-left: 0;
+	}
+}
+
+/* 1. Hide the per-item label inside the concat "fields" list */
+.config-fields-item pkts-input-label {
+	display: none;
+}
+
+/* The form-container reserves 56px for label + input; drop that so the row collapses */
+.config-fields-item .form-container {
+	min-height: 0;
+}
+
+.array-list-item.config-fields-item {
+	display: flex;
+	gap: 1rem;
+}
+
+/* 2. Lay the item toolbar out as a horizontal row of icon buttons */
+.config-fields-item > .array-list-item-toolbar {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	align-items: center;
+	gap: 8px;
+	flex: 0 0 auto;
+	width: auto;
+}
+
+/* In case the buttons sit inside an inner wrapper that is also a column */
+/* .config-fields-item > .array-list-item-toolbar > * {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+} */
+
+/* Keep the toolbar aligned with the input instead of the top of the row */
+.config-fields-item {
+	align-items: flex-start;
+}
+.config-fields-item > .array-list-item-toolbar {
+	align-self: flex-start;
 }

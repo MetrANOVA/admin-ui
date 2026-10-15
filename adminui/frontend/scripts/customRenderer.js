@@ -10,7 +10,7 @@ function classNameToTagName(className) {
 }
 
 const packetsInputComponentNames = Object.keys(Packets)
-	.filter((exportName) => /^PktsInput[A-Z]/.test(exportName))
+	.filter((exportName) => /^Pkts[A-Z]/.test(exportName))
 	.map(classNameToTagName)
 	.filter((tagName) => {
 		const registered = Boolean(customElements.get(tagName));
@@ -34,6 +34,28 @@ function createCustomTester(componentName) {
 		return -1;
 	};
 }
+/**
+ * Resolve the parent object schema and property name for a control scope.
+ *
+ * "#/properties/columns/items/properties/config/properties/source"
+ *   -> parent: the `config` object schema, name: "source"
+ */
+function resolveParent(rootSchema, scope) {
+	if (!rootSchema || !scope || scope === "#") return {};
+
+	const segments = scope.replace(/^#\//, "").split("/");
+	const name = segments.pop(); // "source"
+	segments.pop(); // "properties"
+
+	let node = rootSchema;
+	for (const segment of segments) {
+		node = node?.[segment];
+		if (node === undefined) return {};
+	}
+
+	return { parent: node, name };
+}
+
 function createCustomRenderer(componentName) {
 	return function (data, handleChange, schemaPath, schema) {
 		const jsonSchema = schema?.schema ?? {};
@@ -42,12 +64,24 @@ function createCustomRenderer(componentName) {
 
 		/*
 		 * Required state
+		 *
+		 * 1. schema.required: static requirement computed by JSON Forms
+		 * 2. parent.required: static requirement on the parent object
+		 * 3. parent.allOf[].then.required: conditional requirement (if/then),
+		 *    matched by property name, not by data path
+		 * 4. uiOptions.required: explicit override from the UI schema
 		 */
-		const conditionallyRequired =
-			schema?.rootSchema?.allOf?.some((item) => item?.then?.required?.includes(schemaPath)) ??
-			false;
+		const { parent, name } = resolveParent(schema?.rootSchema, uiSchema.scope);
 
-		const required = Boolean(schema?.required || conditionallyRequired);
+		const staticallyRequired = Boolean(parent?.required?.includes(name));
+
+		const conditionallyRequired = Boolean(
+			parent?.allOf?.some((item) => item?.then?.required?.includes(name)),
+		);
+
+		const required = Boolean(
+			schema?.required || staticallyRequired || conditionallyRequired || uiOptions.required,
+		);
 
 		/*
 		 * Current/default value
