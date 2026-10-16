@@ -3,12 +3,15 @@
 // X-Total-Count header (the shape proposed in MetrANOVA/api#42).
 //
 // The page size is either a fixed number or "auto": as many rows as fit the
-// height of the scroll area, re-measured when it resizes. Changing the size
-// keeps the first visible row on screen rather than jumping to page 1.
+// height of the scroll area, re-measured when it resizes. Auto rounds down to
+// a multiple of five, so a page holds 5, 10, 15… rows rather than 6 or 11.
+// Changing the size keeps the first visible row on screen rather than jumping
+// to page 1.
 
-const PAGE_SIZES = [10, 25, 50, 100];
+const PAGE_SIZES = [10, 25, 50];
 const SIZE_KEY = "adminui.pageSize";
-const MIN_ROWS = 5;
+const ROW_STEP = 5;
+const MIN_ROWS = ROW_STEP;
 const MAX_ROWS = 100;
 const DEFAULT_ROW_HEIGHT = 37;
 
@@ -102,7 +105,8 @@ export class PagedTable {
 		const trailing = section.getBoundingClientRect().bottom - this.tableEl.getBoundingClientRect().bottom;
 		const room = this.scrollEl.clientHeight - bodyTop - footHeight - trailing - this.reserve;
 		const rows = Math.floor(room / (this.rowHeight || DEFAULT_ROW_HEIGHT));
-		return Math.max(MIN_ROWS, Math.min(MAX_ROWS, rows));
+		const rounded = Math.floor(rows / ROW_STEP) * ROW_STEP;
+		return Math.max(MIN_ROWS, Math.min(MAX_ROWS, rounded));
 	}
 
 	/** Re-measure in auto mode; call after anything changes the layout around the table. */
