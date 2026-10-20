@@ -1,32 +1,28 @@
-// /form_schemas/pipeline-form.js
-
-/* -------------------------------- schema -------------------------------- */
-
 export const pipelineSchema = {
 	type: "object",
-	required: ["pipelineName", "table", "description", "matchField", "columns"],
+	required: ["name", "definition_ref", "match_field", "columns"],
 
 	properties: {
-		pipelineName: { type: "string", title: "Pipeline Name", minLength: 1 },
-
-		// table oneOf should be populated by api.
-		table: {
+		name: { type: "string", title: "Pipeline Name", minLength: 1 },
+		definition_ref: {
 			type: "string",
 			title: "Table",
+			minLength: 1,
 			oneOf: [
 				{ const: "def_interface", title: "Interface" },
 				{ const: "meta_interface", title: "Interface metadata" },
 			],
 		},
 
-		description: { type: "string", title: "Description", minLength: 1 },
+		description: { type: "string", title: "Description" },
 
-		// match_field oneOf should be populated by api.
-		matchField: {
+		// TODO: match_field oneOf should be populated by api.
+		match_field: {
 			type: "string",
 			title: "Match Field",
 			description:
 				"The field in each raw record that rules are matched against, e.g. protocol.",
+			minLength: 1,
 			oneOf: [
 				{ const: "protocol", title: "protocol" },
 				{ const: "source", title: "source" },
@@ -35,31 +31,52 @@ export const pipelineSchema = {
 
 		columns: {
 			type: "array",
-			title: "Transformer Columns",
+			title: "Mapping Rules",
 			minItems: 1,
 
 			items: {
 				type: "object",
-				required: ["targetColumn", "matchValue", "operation"],
+				required: ["target_column", "operation"],
 
 				properties: {
-					targetColumn: { type: "string", title: "Column" },
+					// TODO: target_column oneOf should be populated by api, based on the selected table.
+					target_column: {
+						type: "string",
+						title: "Column",
+						minLength: 1,
+						oneOf: [
+							{ const: "timestamp", title: "timestamp" },
+							{ const: "device_name", title: "device_name" },
+							{ const: "interface_name", title: "interface_name" },
+							{ const: "interface_index", title: "interface_index" },
+							{ const: "in_octets", title: "in_octets" },
+							{ const: "out_octets", title: "out_octets" },
+							{ const: "in_errors", title: "in_errors" },
+							{ const: "out_errors", title: "out_errors" },
+							{ const: "speed", title: "speed" },
+							{ const: "protocol", title: "protocol" },
+						],
+					},
 
-					// Display-only copy of the root matchField, shown as the chip in the IF row.
+					// UI only: display copy of the root match_field, shown as the chip in the IF row.
 					// Not part of the API payload.
-					matchFieldMirror: { type: "string", title: "Match Field", readOnly: true },
+					match_field_mirror: { type: "string", title: "Match Field", readOnly: true },
 
-					matchValue: { type: "string", title: "Value" },
+					match_value: { type: "string", title: "Value" },
 
-					// Switch that reveals the optional vendor condition row.
+					// UI only: switch that reveals the optional vendor condition row.
 					// Accepts true or the native checkbox string "on".
-					hasVendorCondition: { type: ["boolean", "string"], title: "Vendor Condition" },
-					vendorMatchField: { type: "string", title: "Vendor Field", minLength: 1 },
-					vendorMatchValue: { type: "string", title: "Vendor Value", minLength: 1 },
+					has_vendor_condition: {
+						type: ["boolean", "string"],
+						title: "Vendor Condition",
+					},
+					vendor_match_field: { type: "string", title: "Vendor Field", minLength: 1 },
+					vendor_match_value: { type: "string", title: "Vendor Value", minLength: 1 },
 
 					operation: {
 						type: "string",
 						title: "Operation",
+						minLength: 1,
 						oneOf: [
 							{ const: "field", title: "Copy field" },
 							{ const: "static", title: "Static value" },
@@ -129,9 +146,9 @@ export const pipelineSchema = {
 						},
 					},
 
-					// Switch that reveals the optional ELSE row
-					hasDefaultValue: { type: ["boolean", "string"], title: "Default Value" },
-					defaultValue: { type: "string", title: "Default Value", minLength: 1 },
+					// UI only: switch that reveals the optional ELSE row
+					has_default_value: { type: ["boolean", "string"], title: "Default Value" },
+					default_value: { type: "string", title: "Default Value", minLength: 1 },
 				},
 
 				// Conditional requirements. Kept inside if/then so hidden or stale
@@ -140,17 +157,17 @@ export const pipelineSchema = {
 					// Switches
 					{
 						if: {
-							properties: { hasVendorCondition: { enum: [true, "on"] } },
-							required: ["hasVendorCondition"],
+							properties: { has_vendor_condition: { enum: [true, "on"] } },
+							required: ["has_vendor_condition"],
 						},
-						then: { required: ["vendorMatchField", "vendorMatchValue"] },
+						then: { required: ["vendor_match_field", "vendor_match_value"] },
 					},
 					{
 						if: {
-							properties: { hasDefaultValue: { enum: [true, "on"] } },
-							required: ["hasDefaultValue"],
+							properties: { has_default_value: { enum: [true, "on"] } },
+							required: ["has_default_value"],
 						},
-						then: { required: ["defaultValue"] },
+						then: { required: ["default_value"] },
 					},
 
 					// Operations (everything except cast is required)
@@ -325,8 +342,6 @@ export const pipelineSchema = {
 	},
 };
 
-/* -------------------------------- ui schema ----------------------------- */
-
 export const pipelineUiSchema = {
 	type: "VerticalLayout",
 
@@ -336,13 +351,13 @@ export const pipelineUiSchema = {
 			elements: [
 				{
 					type: "Control",
-					scope: "#/properties/pipelineName",
+					scope: "#/properties/name",
 					customComponent: "pkts-input-text",
 					options: { placeholder: "Enter Value", required: true },
 				},
 				{
 					type: "Control",
-					scope: "#/properties/table",
+					scope: "#/properties/definition_ref",
 					customComponent: "pkts-select",
 					options: { placeholder: "Select Option", required: true },
 				},
@@ -353,12 +368,12 @@ export const pipelineUiSchema = {
 			type: "Control",
 			scope: "#/properties/description",
 			customComponent: "pkts-input-text",
-			options: { placeholder: "Enter Value", required: true },
+			options: { placeholder: "Enter Value" },
 		},
 
 		{
 			type: "Control",
-			scope: "#/properties/matchField",
+			scope: "#/properties/match_field",
 			customComponent: "pkts-select",
 			options: { placeholder: "Enter Value", info: true, required: true },
 		},
@@ -380,7 +395,7 @@ export const pipelineUiSchema = {
 								{ type: "Label", text: "WRITE TO" },
 								{
 									type: "Control",
-									scope: "#/properties/targetColumn",
+									scope: "#/properties/target_column",
 									customComponent: "pkts-select",
 									options: { placeholder: "target_column", required: true },
 								},
@@ -393,24 +408,24 @@ export const pipelineUiSchema = {
 							elements: [
 								{ type: "Label", text: "IF" },
 								{
-									// Read-only copy of the root matchField (the chip in the mockup)
+									// Read-only copy of the root match_field (the chip in the mockup)
 									type: "Control",
-									scope: "#/properties/matchFieldMirror",
+									scope: "#/properties/match_field_mirror",
 									customComponent: "pkts-chip",
 									options: { placeholder: "Null" },
 								},
 								{ type: "Label", text: "=" },
 								{
+									// Optional in the API, so no required flag
 									type: "Control",
-									scope: "#/properties/matchValue",
+									scope: "#/properties/match_value",
 									customComponent: "pkts-input-text",
-									options: { placeholder: "match_value", required: true },
+									options: { placeholder: "match_value" },
 								},
 								{
 									type: "Control",
-									scope: "#/properties/hasVendorCondition",
+									scope: "#/properties/has_vendor_condition",
 									customComponent: "pkts-input-switch",
-									options: { label: "Vendor Condition" },
 								},
 							],
 						},
@@ -421,7 +436,7 @@ export const pipelineUiSchema = {
 							rule: {
 								effect: "SHOW",
 								condition: {
-									scope: "#/properties/hasVendorCondition",
+									scope: "#/properties/has_vendor_condition",
 									schema: { enum: [true, "on"] },
 									failWhenUndefined: true,
 								},
@@ -430,14 +445,14 @@ export const pipelineUiSchema = {
 								{ type: "Label", text: "AND" },
 								{
 									type: "Control",
-									scope: "#/properties/vendorMatchField",
+									scope: "#/properties/vendor_match_field",
 									customComponent: "pkts-input-text",
 									options: { placeholder: "vendor_match_field", required: true },
 								},
 								{ type: "Label", text: "=" },
 								{
 									type: "Control",
-									scope: "#/properties/vendorMatchValue",
+									scope: "#/properties/vendor_match_value",
 									customComponent: "pkts-input-text",
 									options: { placeholder: "vendor_match_value", required: true },
 								},
@@ -861,34 +876,30 @@ export const pipelineUiSchema = {
 							elements: [
 								{
 									type: "Control",
-									scope: "#/properties/hasDefaultValue",
+									scope: "#/properties/has_default_value",
 									customComponent: "pkts-input-switch",
-									options: { label: "Default Value" },
 								},
+							],
+						},
 
-								// ELSE default_value (only when the switch is on)
+						// ELSE default_value (only when the switch is on)
+						{
+							type: "HorizontalLayout",
+							rule: {
+								effect: "SHOW",
+								condition: {
+									scope: "#/properties/has_default_value",
+									schema: { enum: [true, "on"] },
+									failWhenUndefined: true,
+								},
+							},
+							elements: [
+								{ type: "Label", text: "ELSE" },
 								{
-									type: "HorizontalLayout",
-									rule: {
-										effect: "SHOW",
-										condition: {
-											scope: "#/properties/hasDefaultValue",
-											schema: { enum: [true, "on"] },
-											failWhenUndefined: true,
-										},
-									},
-									elements: [
-										{ type: "Label", text: "ELSE" },
-										{
-											type: "Control",
-											scope: "#/properties/defaultValue",
-											customComponent: "pkts-input-text",
-											options: {
-												placeholder: "default_value",
-												required: true,
-											},
-										},
-									],
+									type: "Control",
+									scope: "#/properties/default_value",
+									customComponent: "pkts-input-text",
+									options: { placeholder: "default_value", required: true },
 								},
 							],
 						},
@@ -898,8 +909,6 @@ export const pipelineUiSchema = {
 		},
 	],
 };
-
-/* ------------------------------ initial data ---------------------------- */
 
 // One empty rule is visible on load, since a transformer needs at least one column.
 export const pipelineInitialData = {

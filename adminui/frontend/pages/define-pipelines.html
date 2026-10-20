@@ -1,15 +1,30 @@
 <main class="pipeline-page">
-	<h2 class="pipeline-page__title">Define Pipeline</h2>
-	<section class="pipeline-panel" aria-labelledby="pipeline-form-heading">
-		<form id="pipeline-form">
-			<json-form id="pipeline-json-form" class="pipeline-json-form"></json-form>
+	<h2 class="pipeline-page__title" id="pipeline-title">Define Pipeline</h2>
 
+	<section class="pipeline-panel" aria-labelledby="pipeline-title">
+		<form id="pipeline-form" novalidate>
+			<json-form id="pipeline-json-form" class="pipeline-json-form"></json-form>
 			<pkts-form-actions form="pipeline-form"></pkts-form-actions>
 		</form>
-	</section>
 
-	<section class="pipeline-preview" aria-labelledby="pipeline-preview-heading">
-		<h5 id="pipeline-preview-heading" class="pipeline-preview__title">Preview</h5>
-		<!-- Add Preview Logic -->
+		<!-- Shown after a successful save -->
+		<div id="pipeline-success-actions" class="pipeline-success-actions" hidden>
+			<pkts-button
+				id="pipeline-create-another"
+				type="button"
+				variant="secondary"
+				label="Create another pipeline"
+			></pkts-button>
+
+			<pkts-button
+				id="pipeline-view-library"
+				type="button"
+				variant="primary"
+				label="View in Library"
+				hx-get="/pages/define-pipelines.html"
+				hx-target="#main-content"
+				hx-push-url="/pipelines"
+			></pkts-button>
+		</div>
 	</section>
 </main>

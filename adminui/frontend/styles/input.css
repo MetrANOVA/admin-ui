@@ -119,6 +119,10 @@ html.packets[data-theme] .text-error {
 	color: var(--error);
 }
 
+[hidden] {
+	display: none !important;
+}
+
 /* =========================================================
    Base page styles
    ========================================================= */
@@ -506,7 +510,7 @@ pkts-form-actions {
 	width: 100%;
 }
 
-pkts-form-actions .pipeline-actions {
+.form-actions {
 	display: flex;
 	width: 100%;
 	align-items: center;
@@ -515,7 +519,7 @@ pkts-form-actions .pipeline-actions {
 	margin-top: 1.5rem;
 }
 /* Shared form-action button layout */
-.packets pkts-form-actions button.pkts-button.pipeline-action {
+.packets button.pkts-button.form-actions {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -529,21 +533,21 @@ pkts-form-actions .pipeline-actions {
 }
 
 /* Cancel */
-.packets pkts-form-actions button.pkts-button.pipeline-action--cancel {
+.packets button.pkts-button.form-actions--cancel {
 	color: var(--background);
 	background: var(--copy-alt);
 	border-color: var(--copy-alt);
 }
 
 /* Save */
-.packets pkts-form-actions button.pkts-button.pipeline-action--save {
+.packets button.pkts-button.form-actions--save {
 	color: var(--background);
 	background: var(--success);
 	border-color: var(--success);
 }
 
 /* Icons */
-.packets pkts-form-actions button.pkts-button.pipeline-action svg {
+.packets button.pkts-button.form-actions svg {
 	width: 1.25rem;
 	height: 1.25rem;
 	color: inherit;
@@ -551,27 +555,27 @@ pkts-form-actions .pipeline-actions {
 }
 
 /* Cancel hover */
-.packets pkts-form-actions button.pkts-button.pipeline-action--cancel:hover {
+.packets button.pkts-button.form-actions--cancel:hover {
 	color: var(--background);
 	background: var(--shadow);
 	border-color: var(--shadow);
 }
 
 /* Save hover */
-.packets pkts-form-actions button.pkts-button.pipeline-action--save:hover {
+.packets button.pkts-button.form-actions--save:hover {
 	color: var(--background);
 	background: color-mix(in srgb, var(--success) 82%, var(--shadow));
 	border-color: color-mix(in srgb, var(--success) 82%, var(--shadow));
 }
 
 /* Keyboard focus */
-.packets pkts-form-actions button.pkts-button.pipeline-action:focus-visible {
+.packets button.pkts-button.form-actions:focus-visible {
 	outline: 3px solid color-mix(in srgb, var(--primary) 35%, transparent);
 	outline-offset: 2px;
 }
 
 /* Disabled */
-.packets pkts-form-actions button.pkts-button.pipeline-action:disabled {
+.packets button.pkts-button.form-actions:disabled {
 	cursor: not-allowed;
 	opacity: 0.5;
 }
@@ -649,6 +653,22 @@ json-form .horizontal-layout-item {
 	gap: 1.5rem;
 	border-radius: 2px;
 	background: var(--background);
+}
+
+/* Success view: read-only, so no add, delete, reorder or save controls */
+.pipeline-page[data-mode="saved"] pkts-form-actions,
+.pipeline-page[data-mode="saved"] .array-list-add,
+.pipeline-page[data-mode="saved"] .array-list-item-toolbar,
+.pipeline-page[data-mode="saved"] [data-twin] {
+	display: none;
+}
+
+.pipeline-success-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 0.75rem;
+	margin-top: 1.5rem;
 }
 
 /* =========================================================
@@ -1049,4 +1069,267 @@ fieldset.array-list:not(:has(.array-list-item)) legend.array-list-legend {
 }
 .config-fields-item > .array-list-item-toolbar {
 	align-self: flex-start;
+}
+
+/*Pipeline save modal preview */
+
+.pipeline-save-preview {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	background-color: var(--background);
+	padding: var(--card-layout-default-padding-y, 24px) var(--card-layout-default-padding-x, 32px);
+}
+
+.pipeline-save-preview__label {
+	font-weight: 600;
+	font-size: 0.9375rem;
+	color: var(--copy);
+}
+
+.pipeline-save-preview__code-wrap {
+	position: relative;
+	background-color: var(--default-surface);
+	border: 1px solid var(--copy-alt-2, #4d595d);
+	padding: 0.75rem 1rem 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	border-radius: var(--card-layout-compact-radius, 8px);
+}
+
+/* .pipeline-save-preview__badge {
+	align-self: flex-start;
+	font-size: 0.6875rem;
+	padding: 0.1rem 0.5rem;
+} */
+
+.pipeline-save-preview__copy {
+	position: absolute;
+	top: 0.75rem;
+	right: 0.75rem;
+	color: var(--copy-alt);
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 0;
+	line-height: 1;
+	opacity: 0.7;
+	transition: opacity 150ms;
+}
+
+.pipeline-save-preview__copy:hover {
+	opacity: 1;
+}
+
+.pipeline-save-preview__code {
+	display: block;
+	width: 100%;
+	font-family: "Source Code Pro", monospace;
+	font-size: 0.75rem;
+	line-height: 1.6;
+	color: var(--copy);
+	white-space: pre;
+	overflow-x: auto;
+	max-height: 160px;
+	overflow-y: auto;
+	background: none;
+	margin: 0;
+	padding: 0;
+}
+
+/* =========================================================
+   Read-only: tokens
+   ========================================================= */
+
+json-form[data-readonly] {
+	--ro-label-size: 0.8125rem;
+	--ro-label-lh: 1.25rem;
+	--ro-value-size: 1.125rem;
+	--ro-value-lh: 1.5rem;
+	--ro-pair-gap: 0.125rem;
+	--ro-keyword-width: 5.5rem;
+	--ro-row-gap: 1.25rem;
+	--ro-accent: var(--readonly-accent, #3fa7c0);
+}
+
+json-form[data-readonly].pipeline-json-form .array-list {
+	--heading-offset: 0;
+}
+
+/* =========================================================
+   Read-only: remove edit-only chrome
+   ========================================================= */
+
+json-form[data-readonly] .array-list-add,
+json-form[data-readonly] .array-list-item-toolbar,
+json-form[data-readonly] [data-twin],
+json-form[data-readonly] [data-role="toggle"],
+json-form[data-readonly] [data-row="default"],
+pkts-form-control[data-readonly-hidden] {
+	display: none !important;
+}
+
+/* Wrappers of hidden rows must not add spacing */
+json-form[data-readonly] .vertical-layout-item:has(> [data-row="default"]),
+json-form[data-readonly] .vertical-layout-item:has(> [data-row][hidden]),
+json-form[data-readonly] .vertical-layout-item:has(> [data-row][style*="display: none"]) {
+	display: none !important;
+}
+
+/* The grey panel behind the rules isn't in the mockup */
+json-form[data-readonly] .transformer-columns-wrapper,
+json-form[data-readonly] .transformer-columns-item {
+	background: transparent;
+}
+json-form[data-readonly] .transformer-columns-wrapper {
+	padding: 1rem 1rem 1rem 0.5rem;
+}
+
+/* "Mapping Rules" heading: same muted style as the other labels */
+json-form[data-readonly] .array-list-label {
+	font-size: 0.875rem;
+	font-weight: 600;
+	opacity: 0.7;
+}
+
+/* =========================================================
+   Read-only: label / value pairs
+   ========================================================= */
+
+json-form[data-readonly] .form-container--readonly {
+	min-height: 0;
+	gap: var(--ro-pair-gap);
+}
+
+json-form[data-readonly] .readonly-label {
+	font-size: var(--ro-label-size);
+	line-height: var(--ro-label-lh);
+	opacity: 0.7;
+}
+
+json-form[data-readonly] .readonly-value {
+	font-size: var(--ro-value-size);
+	line-height: var(--ro-value-lh);
+	overflow-wrap: anywhere;
+}
+
+/* =========================================================
+   Read-only: mapping rule rows
+   ========================================================= */
+
+/* Space between rows (margin, so hidden rows add nothing) */
+json-form[data-readonly] .vertical-layout-item:has(> [data-row]) {
+	margin: 0;
+	padding: 0;
+	min-height: 0;
+}
+json-form[data-readonly]
+	.vertical-layout-item:has(> [data-row])
+	~ .vertical-layout-item:has(> [data-row]) {
+	margin-top: var(--ro-row-gap);
+}
+
+/* Each row: content-sized columns, top aligned */
+json-form[data-readonly] [data-row] {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	align-items: flex-start;
+	column-gap: 1.5rem;
+	row-gap: 0;
+	margin: 0;
+	padding: 0;
+	min-height: 0;
+}
+
+json-form[data-readonly] [data-row] > .horizontal-layout-item {
+	flex: 0 1 auto !important; /* overrides the weights */
+	width: auto !important;
+	min-width: 0;
+	min-height: 0 !important;
+	margin: 0;
+	padding: 0;
+	align-self: flex-start;
+}
+
+/* WRITE TO / IF / AND / THEN / ELSE and "=":
+   offset by the label height so they sit on the value line */
+json-form[data-readonly] [data-role="keyword"],
+json-form[data-readonly] [data-role="operator"] {
+	padding-top: calc(var(--ro-label-lh) + var(--ro-pair-gap)) !important;
+	line-height: var(--ro-value-lh);
+}
+
+json-form[data-readonly] [data-role="keyword"] {
+	flex: 0 0 var(--ro-keyword-width) !important; /* keeps the first column aligned across rows */
+}
+
+json-form[data-readonly] [data-role="operator"] {
+	flex: 0 0 auto !important;
+}
+
+json-form[data-readonly] [data-role="keyword"] .label-element,
+json-form[data-readonly] [data-role="operator"] .label-element {
+	margin: 0;
+	padding: 0;
+	min-height: 0;
+	height: auto;
+	line-height: inherit;
+	align-self: flex-start;
+}
+
+/* =========================================================
+   Read-only: THEN row (Operation + Config)
+   ========================================================= */
+
+json-form[data-readonly] [data-row="then"] > [data-role="then-left"] {
+	flex: 0 0 auto !important;
+	min-width: 9rem;
+}
+
+json-form[data-readonly] [data-row="then"] > [data-role="then-right"] {
+	flex: 1 1 0 !important;
+}
+
+/* "Config" caption looks like the other labels */
+json-form[data-readonly] [data-role="config-caption"] {
+	margin: 0 0 var(--ro-pair-gap);
+	padding: 0;
+	font-size: var(--ro-label-size);
+	font-weight: 400;
+	line-height: var(--ro-label-lh);
+	opacity: 0.7;
+}
+json-form[data-readonly] [data-role="config-caption"] .label-element {
+	margin: 0;
+	padding: 0;
+	font: inherit;
+	color: inherit;
+}
+
+/* Config body: teal bar, fields stacked */
+json-form[data-readonly] [data-role="config-body"] {
+	margin: 0;
+	padding: 0 0 0 1rem;
+	border-left: 3px solid var(--ro-accent);
+}
+
+json-form[data-readonly] [data-role="config-body"] .readonly-label {
+	font-size: 0.75rem;
+}
+
+json-form[data-readonly]
+	[data-role="config-body"]
+	.vertical-layout-item:has(> pkts-form-control)
+	~ .vertical-layout-item:has(> pkts-form-control) {
+	margin-top: 0.75rem;
+}
+
+/* Optional config fields left empty (e.g. Cast) are omitted */
+json-form[data-readonly]
+	[data-role="config-body"]
+	.vertical-layout-item:has(> pkts-form-control[data-empty]) {
+	display: none;
 }

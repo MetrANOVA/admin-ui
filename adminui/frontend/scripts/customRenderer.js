@@ -25,15 +25,15 @@ const packetsInputComponentNames = Object.keys(Packets)
 const allComponentNames = [...new Set([...componentNames, ...packetsInputComponentNames])];
 
 console.log("Packets input components:", allComponentNames);
-/* CREATE TESTER AND RENDERERS */
 
-function createCustomTester(componentName) {
-	return function (uischema, schema, context) {
-		if (!uischema.scope) return -1;
-		if (uischema.customComponent === componentName) return 6;
-		return -1;
-	};
-}
+/* =========================================================
+   Helpers
+   ========================================================= */
+
+// readonly="true", or just the bare attribute, counts as readonly. readonly="false" doesn't.
+const isReadonlyForm = (form) =>
+	Boolean(form?.hasAttribute("readonly")) && form.getAttribute("readonly") !== "false";
+
 /**
  * Resolve the parent object schema and property name for a control scope.
  *
@@ -54,6 +54,18 @@ function resolveParent(rootSchema, scope) {
 	}
 
 	return { parent: node, name };
+}
+
+/* =========================================================
+   Tester and renderer
+   ========================================================= */
+
+function createCustomTester(componentName) {
+	return function (uischema, schema, context) {
+		if (!uischema.scope) return -1;
+		if (uischema.customComponent === componentName) return 6;
+		return -1;
+	};
 }
 
 function createCustomRenderer(componentName) {
@@ -215,6 +227,12 @@ function createCustomRenderer(componentName) {
 		}
 
 		/*
+		 * Readonly form: the renderer can't see which form it belongs to,
+		 * so it checks the first json-form on the page.
+		 */
+		const formIsReadonly = isReadonlyForm(document.querySelector("json-form"));
+
+		/*
 		 * Return the wrapper. It will create the installed Packets
 		 * component identified by componentName.
 		 */
@@ -235,8 +253,10 @@ function createCustomRenderer(componentName) {
 				required,
 				error,
 
-				// Supports readonly configured in the schema.
-				disabled: Boolean(schema?.disabled || uiOptions.readonly || jsonSchema.readOnly),
+				// Supports readonly from the schema and from the form's readonly attribute.
+				disabled: Boolean(
+					schema?.disabled || uiOptions.readonly || jsonSchema.readOnly || formIsReadonly,
+				),
 
 				/*
 				 * Change this through the UI schema if a component
@@ -252,7 +272,19 @@ function createCustomRenderer(componentName) {
 				 * event.detail.value
 				 */
 				onChange: (event) => {
-					const nextValue = event.detail?.value ?? event.target?.value;
+					const { detail } = event;
+					let nextValue;
+
+					if (jsonSchema.type === "boolean") {
+						nextValue =
+							typeof detail?.checked === "boolean"
+								? detail.checked
+								: detail?.value === true ||
+								  detail?.value === "on" ||
+								  detail?.value === "true";
+					} else {
+						nextValue = detail?.value ?? event.target?.value;
+					}
 
 					handleChange(schemaPath, nextValue);
 				},
@@ -261,11 +293,12 @@ function createCustomRenderer(componentName) {
 	};
 }
 
-/* REGISTER RENDERERS */
+/* =========================================================
+   Register renderers
+   ========================================================= */
+
 document.body.addEventListener("json-form:beforeMount", (event) => {
-	console.log("does anyone call you");
 	let elem = event.detail[0].target;
-	console.log("elem: ", elem);
 	if (!elem) return;
 
 	allComponentNames.forEach((component) => {
@@ -282,33 +315,37 @@ document.body.addEventListener("json-form:beforeMount", (event) => {
 	});
 });
 
-/* READONLY MODE */
+/* =========================================================
+   Readonly mode
+   ========================================================= */
 
-document.body.addEventListener("json-form:mounted", (event) => {
-	const readonly = event.target.readonly == "true";
-	componentNames.forEach((component) => {
-		document
-			.querySelector("json-form")
-			?.querySelectorAll(component)
-			.forEach((comp) => {
-				comp.disabled = readonly;
-			});
+function applyReadonly(form) {
+	if (!form) return;
+
+	const readonly = isReadonlyForm(form);
+
+	// Hook for CSS, e.g. hiding the add, delete and reorder controls
+	form.toggleAttribute("data-readonly", readonly);
+
+	if (!readonly) return;
+
+	// Set it on the wrapper, which forwards it to the inner pkts-* control and keeps it
+	form.querySelectorAll("pkts-form-control").forEach((control) => {
+		if (!control.disabled) control.disabled = true;
 	});
-});
+}
 
-document.body.addEventListener("json-form:updated", (event) => {
-	const readonly = event.target.readonly == "true";
-	componentNames.forEach((component) => {
-		document
-			.querySelector("json-form")
-			?.querySelectorAll(component)
-			.forEach((comp) => {
-				comp.disabled = readonly;
-			});
-	});
-});
+function handleReadonlyEvent(event) {
+	const form = event.target?.closest?.("json-form") ?? event.target;
+	applyReadonly(form);
+}
 
-/* Mark Dirty */
+document.body.addEventListener("json-form:mounted", handleReadonlyEvent);
+document.body.addEventListener("json-form:updated", handleReadonlyEvent);
+
+/* =========================================================
+   Mark dirty
+   ========================================================= */
 
 document.addEventListener("markAllDirty", () => {
 	document.querySelectorAll(componentNames).forEach((control) => {
@@ -318,8 +355,13 @@ document.addEventListener("markAllDirty", () => {
 		}
 	});
 
-	newMessageBanner("Form fields not all valid", "Error", true);
+	window.newMessageBanner?.("Form fields not all valid", "Error", true);
 });
+
+/* =========================================================
+   Debug: logs when a delete button is enabled or disabled.
+   Remove once you've finished debugging the list buttons.
+   ========================================================= */
 
 function observeButton(button) {
 	const observer = new MutationObserver((mutations) => {
