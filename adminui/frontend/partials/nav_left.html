@@ -25,7 +25,7 @@
 	</a>
 
 	<!-- Navigation -->
-	<div class="mt-8 flex min-h-0 w-full flex-1 flex-col gap-4">
+	<div class="mt-8 flex min-h-0 w-full flex-1 flex-col gap-4 overflow-y-auto">
 		<!-- Actions -->
 		<section class="w-full border-t-2 border-copy-alt pt-1">
 			<p class="pb-2 pt-1 px-0 text-[12px] font-normal leading-4 text-copy-alt">Action</p>
@@ -175,15 +175,17 @@
 
 	<!-- Footer -->
 	<div class="mt-auto flex w-full flex-col items-start gap-3 px-3 pt-8">
-		<!-- Theme toggle -->
-		<pkts-input-switch id="theme-toggle"></pkts-input-switch>
-		<!-- <div id="theme-toggle" class="pkts-input-switch">
-			<input type="checkbox" />
-			<div class="indicator"></div>
-		</div> -->
+		<!-- User avatar, with the theme toggle on the same row so it stays out of the menu -->
+		<div class="flex w-full items-center justify-between gap-3">
+			<!-- Initials come from /auth/me (see checkSession in app.js) -->
+			<div class="pkts-avatar pkts-medium pkts-grape"><span id="user-avatar">JL</span></div>
 
-		<!-- User avatar; initials come from /auth/me (see checkSession in app.js) -->
-		<div class="pkts-avatar pkts-medium pkts-grape"><span id="user-avatar">JL</span></div>
+			<pkts-input-switch id="theme-toggle"></pkts-input-switch>
+			<!-- <div id="theme-toggle" class="pkts-input-switch">
+				<input type="checkbox" />
+				<div class="indicator"></div>
+			</div> -->
+		</div>
 
 		<!-- Hidden until the API reports a logged-in user -->
 		<button
