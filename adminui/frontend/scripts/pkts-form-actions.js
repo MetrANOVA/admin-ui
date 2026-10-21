@@ -105,11 +105,10 @@ export class PktsFormActions extends HTMLElement {
 		 * No disabled interpolation is needed here.
 		 */
 		this.innerHTML = `
-			<div class="pipeline-actions">
+			<div class="form-actions">
 				<pkts-button
 					class="
-						pipeline-action
-						pipeline-action--cancel
+						form-actions--cancel
 					"
 					variant="secondary"
 					type="button"
@@ -125,8 +124,7 @@ export class PktsFormActions extends HTMLElement {
 
 				<pkts-button
 					class="
-						pipeline-action
-						pipeline-action--save
+						form-actions--save
 					"
 					variant="primary"
 					type="button"
@@ -189,9 +187,13 @@ export class PktsFormActions extends HTMLElement {
 			return;
 		}
 
-		const form = this.form;
-
-		// SOME SAVE LOGIC
+		this.dispatchEvent(
+			new CustomEvent("form-save", {
+				bubbles: true,
+				composed: true,
+				detail: { form: this.form },
+			}),
+		);
 	}
 
 	_handleCancel(originalEvent) {
@@ -199,9 +201,13 @@ export class PktsFormActions extends HTMLElement {
 			return;
 		}
 
-		const form = this.form;
-
-		// SOME CANCEL LOGIC
+		this.dispatchEvent(
+			new CustomEvent("form-cancel", {
+				bubbles: true,
+				composed: true,
+				detail: { form: this.form },
+			}),
+		);
 	}
 
 	_toBoolean(value) {

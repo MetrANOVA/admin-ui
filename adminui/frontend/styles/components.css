@@ -359,7 +359,7 @@ ps-select-multi[disabled] .form-container .ps-dropdown {
 }
 
 /* ps-select-chip */
-ps-select-chip[disabled] .form-container .ps-dropdown {
+pkts-select-chip[disabled] .form-container .ps-dropdown {
 	display: none;
 }
 
@@ -660,150 +660,139 @@ ps-button[theme="SmallError"] button:hover {
 	color: rgb(var(--surface-2));
 }
 
-/* ps-modal */
+/* pkts-modal */
 
-ps-modal {
-	display: none;
-}
-
-ps-modal .data-box {
-	display: flex;
-	flex-direction: row;
-	gap: 1rem;
-	width: 80%;
-	background-color: rgb(var(--surface-2));
-	justify-content: start;
-	padding: 1.25rem;
-	border-radius: 1rem;
-}
-
-.data-box .data-info {
-	display: flex;
-	flex-direction: column;
-}
-
-.data-box .data-info span {
-	font-family: "Source Code Pro", monospace;
-	color: rgb(var(--copy-alt));
-}
-
-.data-box svg {
-	width: 36px;
-	height: auto;
-}
-
-#confirm-modal {
-	/* Underlay covers entire screen. */
+/* Overlay: pkts-modal is toggled with inline display:block/none */
+pkts-modal {
 	position: fixed;
-	inset: 0px;
+	inset: 0;
 	z-index: 1000;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	background-color: rgb(0 0 0 / var(--tw-bg-opacity, 1));
-	--tw-bg-opacity: 0.5;
-	/* Animate when opening */
-	animation-name: fadeIn;
-	animation-duration: 150ms;
-	animation-timing-function: ease;
 }
 
-#confirm-modal .save-cancel {
-	width: 80%;
-}
-
-#confirm-modal > .modal-underlay {
-	/* underlay takes up the entire viewport. This is only
-  required if you want to click to dismiss the popup */
+pkts-modal .modal-dialog {
 	position: absolute;
-	z-index: -1;
-	top: 0px;
-	bottom: 0px;
-	left: 0px;
-	right: 0px;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	padding: 1.5rem;
 }
 
-#confirm-modal > .modal-content {
-	margin-top: 30vh;
+pkts-modal .modal-underlay {
+	position: absolute;
+	inset: 0;
+	background: rgb(0 0 0 / 0.6);
+}
+
+/* Card: border color comes from the theme via inline style */
+pkts-modal .modal-content {
+	position: relative;
+	box-sizing: border-box;
+	width: 60%;
+	max-height: calc(100vh - 3rem);
+	overflow-y: auto;
 	display: flex;
-	width: 80%;
-	max-width: 900px;
 	flex-direction: column;
+	gap: 1.25rem;
+	padding: 4rem 5rem;
+	background: var(--surface-1);
+	color: var(--copy, #fff);
+	border: 2px solid var(--copy, #fff);
+	border-radius: 8px;
+}
+
+/* Close button, top right */
+pkts-modal .modal-close {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	display: grid;
+	place-items: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	padding: 0;
+	background: none;
+	border: 0;
+	border-radius: 50%;
+	color: inherit;
+	cursor: pointer;
+}
+pkts-modal .modal-close:hover {
+	background: rgb(255 255 255 / 0.12);
+}
+
+/* Icon inline with the title, centered as a group */
+pkts-modal .modal-header {
+	display: flex;
 	align-items: center;
-	gap: 1rem;
-	border-radius: 0.5rem;
-	border-width: 0.2rem;
-	--tw-border-opacity: 1;
-	border-color: rgb(var(--surface-2));
-	--tw-bg-opacity: 1;
-	background-color: rgb(var(--surface-1));
-	padding-top: 2rem;
-	padding-bottom: 2rem;
-	padding-left: 4rem;
-	padding-right: 4rem;
-	--tw-shadow: 0px 2px 3px -1px rgba(0, 0, 0, 0.1), 0px 4px 5px -1px rgba(0, 0, 0, 0.1);
-	--tw-shadow-colored: 0px 2px 3px -1px var(--tw-shadow-color),
-		0px 4px 5px -1px var(--tw-shadow-color);
-	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
-		var(--tw-shadow);
-	/* Animate when opening */
-	animation-name: zoomIn;
-	animation-duration: 150ms;
-	animation-timing-function: ease;
+	justify-content: center;
+	gap: 0.5rem;
+}
+pkts-modal .modal-icon {
+	flex: 0 0 auto;
+}
+pkts-modal .modal-question {
+	width: fit-content;
+	margin: 0;
+	font-size: 1.125rem;
+	font-weight: 600;
+	text-align: center;
+}
+pkts-modal .modal-question code {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-weight: 400;
 }
 
-#confirm-modal.closing {
-	/* Animate when closing */
-	animation-name: fadeOut;
-	animation-duration: 150ms;
-	animation-timing-function: ease;
+pkts-modal .modal-message {
+	margin: 0;
+	text-align: center;
 }
 
-#confirm-modal.closing > .modal-content {
-	/* Animate when closing */
-	animation-name: zoomOut;
-	animation-duration: 150ms;
-	animation-timing-function: ease;
+/* Buttons, right aligned */
+pkts-modal .form-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.75rem;
+	margin: 0;
 }
 
-@keyframes fadeIn {
-	0% {
-		opacity: 0;
-	}
-
-	100% {
-		opacity: 1;
-	}
+/* Preview panel (merge with your existing .pipeline-save-preview rules) */
+pkts-modal .pipeline-save-preview {
+	padding: 1rem;
+	background: var(--surface-inset, #0b2226);
+	border-radius: 4px;
 }
-
-@keyframes fadeOut {
-	0% {
-		opacity: 1;
-	}
-
-	100% {
-		opacity: 0;
-	}
+pkts-modal .pipeline-save-preview__label {
+	margin: 0 0 0.75rem;
+	font-weight: 600;
 }
-
-@keyframes zoomIn {
-	0% {
-		transform: scale(0.9);
-	}
-
-	100% {
-		transform: scale(1);
-	}
+pkts-modal .pipeline-save-preview__code-wrap {
+	position: relative;
+	padding: 0.5rem 0.75rem;
+	background: var(--input-bg, #000);
+	border: 1px solid var(--border, #3a4448);
+	border-radius: 4px;
 }
-
-@keyframes zoomOut {
-	0% {
-		transform: scale(1);
-	}
-
-	100% {
-		transform: scale(0.9);
-	}
+pkts-modal .pipeline-save-preview__badge {
+	display: inline-block;
+	margin-bottom: 0.25rem;
+}
+pkts-modal .pipeline-save-preview__copy {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	padding: 0;
+	background: none;
+	border: 0;
+	color: inherit;
+	cursor: pointer;
+}
+pkts-modal .pipeline-save-preview__code {
+	margin: 0;
+	max-height: 40vh;
+	overflow: auto;
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 0.8125rem;
+	white-space: pre-wrap;
 }
 
 /* INPUT SWITCH */
