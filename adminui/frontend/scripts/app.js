@@ -125,7 +125,10 @@ function applyUserToNav() {
 			.map((part) => part[0].toUpperCase())
 			.join("");
 		avatar.textContent = initials || "?";
-		avatar.parentElement.setAttribute("title", user.username);
+	}
+	const name = document.getElementById("user-menu-name");
+	if (name) {
+		name.textContent = `Signed in as ${user.username}`;
 	}
 	const logout = document.getElementById("logout-button");
 	if (logout) {
@@ -134,6 +137,33 @@ function applyUserToNav() {
 }
 
 document.addEventListener("htmx:afterSwap", applyUserToNav);
+
+// Account menu on the avatar: the avatar toggles it, a click anywhere else or
+// Escape closes it. Delegated, like the rest, because the nav is swapped in.
+function setUserMenu(open) {
+	const menu = document.getElementById("user-menu");
+	const button = document.getElementById("user-menu-button");
+	if (!menu || !button) {
+		return;
+	}
+	menu.classList.toggle("pkts-hidden", !open);
+	button.setAttribute("aria-expanded", String(open));
+}
+
+document.addEventListener("click", (event) => {
+	if (event.target.closest("#user-menu-button")) {
+		const menu = document.getElementById("user-menu");
+		setUserMenu(menu ? menu.classList.contains("pkts-hidden") : false);
+	} else if (!event.target.closest("#user-menu")) {
+		setUserMenu(false);
+	}
+});
+
+document.addEventListener("keydown", (event) => {
+	if (event.key === "Escape") {
+		setUserMenu(false);
+	}
+});
 
 document.addEventListener("click", async (event) => {
 	if (!event.target.closest("#logout-button")) {
