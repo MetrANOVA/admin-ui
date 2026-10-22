@@ -120,6 +120,21 @@ TABLE_SCHEMA = {
                     },
                 },
                 "required": ["field_name", "field_type"],
+                # Primary Key fields become the table's identifier and sort key,
+                # so they can't be empty. The page also unticks Nullable when
+                # Primary Key is ticked; this catches it being ticked again.
+                "if": {
+                    "properties": {"primary_key": {"const": True}},
+                    "required": ["primary_key"],
+                },
+                "then": {
+                    "properties": {
+                        "nullable": {
+                            "const": False,
+                            "errorMessage": "Primary Key can't be Nullable",
+                        }
+                    }
+                },
             },
         },
     },
@@ -194,6 +209,14 @@ TABLE_UI_SCHEMA = {
                             "type": "Control",
                             "scope": "#/properties/nullable",
                             "customComponent": "pkts-input-checkbox",
+                            # Primary Key fields can't be Nullable
+                            "rule": {
+                                "effect": "DISABLE",
+                                "condition": {
+                                    "scope": "#/properties/primary_key",
+                                    "schema": {"const": True},
+                                },
+                            },
                         },
                     ],
                 },

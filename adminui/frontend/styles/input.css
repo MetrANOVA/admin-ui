@@ -810,6 +810,16 @@ json-form .horizontal-layout-item {
 		var(--pkts-color-core-blue-400, #00b6f2);
 }
 
+/* A locked checkbox (Nullable on a Primary Key row) looks unavailable.
+   The read-only success view disables everything, so leave it alone. */
+.table-json-form:not([data-readonly])
+	.table-fields-list
+	.pkts-input-checkbox
+	input[type="checkbox"]:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
 /* Column labels only on the first row */
 .table-json-form
 	.table-fields-list

@@ -23,10 +23,16 @@ TTL_PATTERN = re.compile(r"^\d+\s+(SECOND|MINUTE|HOUR|DAY|WEEK|MONTH|QUARTER|YEA
 
 
 def validate_api_request(path: str, body: dict) -> list[str]:
-    """Same checks MetrANOVA/api runs on these requests."""
+    """The checks MetrANOVA/api runs on these requests, plus nullable identifiers,
+    which it should reject but doesn't yet."""
     errors = []
     fields = body["data_fields"] if path == "/type/" else body["fields"]
     names = [f.get("field_name") or f.get("name") for f in fields]
+    nullable_keys = [
+        f.get("field_name") or f.get("name")
+        for f in fields
+        if f.get("nullable") and (f.get("field_name") or f.get("name")) in body["identifier"]
+    ]
 
     if not body["name"]:
         errors.append("Table Name is required")
@@ -36,6 +42,8 @@ def validate_api_request(path: str, body: dict) -> list[str]:
         errors.append("field names must be unique")
     if not body["identifier"]:
         errors.append("mark at least one field as a Primary Key")
+    if nullable_keys:
+        errors.append(f"Primary Key fields can't be Nullable: {', '.join(nullable_keys)}")
     if path == "/type/" and not TTL_PATTERN.match(body["ttl"]):
         errors.append("retention must look like '365 DAY'")
 

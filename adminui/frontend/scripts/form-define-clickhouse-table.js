@@ -146,6 +146,23 @@ function enhanceTableForm(form) {
 // rather than on the next frame (frames can be paused, e.g. background tabs)
 watchForm(FORM_SELECTOR, { sync: shortenErrors, frame: enhanceTableForm });
 
+// Ticking Primary Key unticks Nullable on the same row: identifier fields
+// can't be empty. A UI schema rule then disables Nullable until Primary Key
+// is unticked. Clicking the checkbox (before the rule re-renders it as
+// disabled) lets JSON Forms record the change.
+document.addEventListener("change", (event) => {
+	const control = event.target.closest?.(
+		`${FORM_SELECTOR} pkts-form-control[name$=".primary_key"]`,
+	);
+	if (!control?.querySelector("input[type='checkbox']")?.checked) return;
+
+	const row = control.closest(".array-list-item");
+	const nullable = row?.querySelector(
+		"pkts-form-control[name$='.nullable'] input[type='checkbox']",
+	);
+	if (nullable?.checked) nullable.click();
+});
+
 /* =========================================================
    Errors above the buttons (page rules and API responses)
    ========================================================= */

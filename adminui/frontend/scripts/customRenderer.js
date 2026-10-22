@@ -262,8 +262,13 @@ function createCustomRenderer(componentName) {
 				error,
 
 				// Supports readonly from the schema and from the form's readonly attribute.
+				// enabled is false when a UI schema rule disables the control
 				disabled: Boolean(
-					schema?.disabled || uiOptions.readonly || jsonSchema.readOnly || formIsReadonly,
+					schema?.disabled ||
+						schema?.enabled === false ||
+						uiOptions.readonly ||
+						jsonSchema.readOnly ||
+						formIsReadonly,
 				),
 
 				/*
