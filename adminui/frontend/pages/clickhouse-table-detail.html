@@ -1,0 +1,119 @@
+<section class="flex flex-col items-center gap-4 px-[max(6rem,9.6vw)] pt-16 pb-[88px]">
+	<div class="flex w-full max-w-[1348px] flex-col items-center gap-6">
+		<div class="relative mb-6 flex h-9 w-full items-center justify-center">
+			<a
+				href="/tables"
+				hx-get="/pages/clickhouse-tables.html"
+				hx-target="#main-content"
+				hx-push-url="/tables"
+				class="absolute left-0 inline-flex h-9 w-16 items-center justify-center rounded-full bg-copy-alt !text-surface2"
+				aria-label="Back to Clickhouse Tables"
+			>
+				<i data-lucide="undo-2" class="h-5 w-5"></i>
+			</a>
+		</div>
+
+		<div class="flex w-full flex-col gap-8 rounded border border-shadow bg-surface1 px-10 py-8">
+			<div class="flex w-full items-center justify-center gap-3 self-stretch">
+				<i data-lucide="table-2" class="h-8 w-8 shrink-0 text-copy"></i>
+				<h1 class="h2 !mb-0 !w-auto !font-sans" id="table-detail-title">…</h1>
+			</div>
+
+			<p class="hidden text-center text-copy-alt" id="table-detail-message"></p>
+
+			<dl class="flex flex-col gap-6" id="table-detail-facts">
+				<div>
+					<dt class="text-sm font-medium text-copy-alt">Table Name</dt>
+					<dd class="text-base text-copy" data-fact="table_name"></dd>
+				</div>
+				<div>
+					<dt class="text-sm font-medium text-copy-alt">Table Type</dt>
+					<dd class="text-base text-copy" data-fact="table_type"></dd>
+				</div>
+				<!-- Not in the mockup; the API stores a retention (TTL) for data tables only -->
+				<div data-only="data">
+					<dt class="text-sm font-medium text-copy-alt">Retention</dt>
+					<dd class="text-base text-copy" data-fact="ttl"></dd>
+				</div>
+				<div class="flex flex-col gap-2">
+					<dt class="text-sm font-medium text-copy-alt">Table Fields</dt>
+					<dd id="table-detail-fields"></dd>
+				</div>
+			</dl>
+		</div>
+	</div>
+</section>
+
+<script type="module">
+	// One table from our API (GET /api/table/{table_name}), which serves dummy
+	// data for now and will call MetrANOVA (GET /type/{slug} or
+	// GET /metadata/{slug}) later. ?name= picks the table.
+	import { createFieldsTable } from "/scripts/utils/clickhouse-fields-table.js";
+
+	const TYPE_LABELS = { data: "Data Table", metadata: "Metadata Table" };
+
+	const titleEl = document.getElementById("table-detail-title");
+	const messageEl = document.getElementById("table-detail-message");
+	const factsEl = document.getElementById("table-detail-facts");
+
+	// "365 DAY" -> "365 Days", "1 YEAR" -> "1 Year"
+	function formatTtl(ttl) {
+		const [amount, unit = ""] = String(ttl ?? "").split(/\s+/);
+		if (!amount || !unit) return ttl || "—";
+		const word = unit.charAt(0) + unit.slice(1).toLowerCase();
+		return `${amount} ${word}${amount === "1" ? "" : "s"}`;
+	}
+
+	function showMessage(text) {
+		messageEl.textContent = text;
+		messageEl.classList.remove("hidden");
+		factsEl.classList.add("hidden");
+	}
+
+	function render(table) {
+		titleEl.textContent = table.table_name;
+		const values = {
+			table_name: table.table_name,
+			table_type: TYPE_LABELS[table.table_type] ?? table.table_type,
+			ttl: formatTtl(table.ttl),
+		};
+		for (const dd of factsEl.querySelectorAll("[data-fact]")) {
+			dd.textContent = values[dd.dataset.fact] || "—";
+		}
+		for (const el of factsEl.querySelectorAll("[data-only]")) {
+			el.hidden = el.dataset.only !== table.table_type;
+		}
+		document.getElementById("table-detail-fields").replaceChildren(
+			createFieldsTable(table.fields ?? [], {
+				nameLabel: "Column Name",
+				typeLabel: "Data Type",
+			}),
+		);
+	}
+
+	const name = new URLSearchParams(window.location.search).get("name");
+
+	if (!name) {
+		titleEl.textContent = "Clickhouse Table";
+		showMessage("No table selected.");
+	} else {
+		titleEl.textContent = name;
+		try {
+			const response = await fetch(
+				`${window.ADMINUI_API_BASE}/table/${encodeURIComponent(name)}`,
+			);
+			if (response.status === 404) {
+				showMessage(`There's no table named ${name}.`);
+			} else if (!response.ok) {
+				throw new Error(`HTTP ${response.status}`);
+			} else {
+				render(await response.json());
+			}
+		} catch (error) {
+			console.error("Could not load table:", error);
+			showMessage("Could not load this table. Is the API running?");
+		}
+	}
+
+	window.lucide?.createIcons();
+</script>

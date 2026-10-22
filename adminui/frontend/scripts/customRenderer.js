@@ -68,6 +68,14 @@ function createCustomTester(componentName) {
 	};
 }
 
+// "12" -> 12, "" -> undefined (so "required" applies), "abc" -> "abc"
+function toNumber(value) {
+	if (typeof value !== "string") return value;
+	if (value.trim() === "") return undefined;
+	const number = Number(value);
+	return Number.isNaN(number) ? value : number;
+}
+
 function createCustomRenderer(componentName) {
 	return function (data, handleChange, schemaPath, schema) {
 		const jsonSchema = schema?.schema ?? {};
@@ -284,6 +292,13 @@ function createCustomRenderer(componentName) {
 								  detail?.value === "true";
 					} else {
 						nextValue = detail?.value ?? event.target?.value;
+					}
+
+					// Inputs always report text ("1"), which fails "type": "integer"
+					// or "number". Convert it; leave anything that isn't a number
+					// as typed so the schema still reports it.
+					if (["integer", "number"].includes(jsonSchema.type)) {
+						nextValue = toNumber(nextValue);
 					}
 
 					handleChange(schemaPath, nextValue);

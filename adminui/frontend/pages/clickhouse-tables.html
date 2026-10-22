@@ -1,0 +1,250 @@
+<section class="flex flex-col items-center gap-4 px-[max(6rem,9.6vw)] pt-16 pb-[88px]">
+	<div class="flex w-full max-w-[1348px] flex-col items-center gap-6">
+		<div class="flex items-center justify-center gap-3">
+			<i data-lucide="table-2" class="h-8 w-8 shrink-0 text-copy"></i>
+			<h1 class="h1 display2 !font-sans">Clickhouse Tables</h1>
+		</div>
+
+		<div class="flex w-full items-center gap-4">
+			<label class="pkts-input-text pkts-input-search min-w-0 flex-1" for="tables-search">
+				<input
+					id="tables-search"
+					type="search"
+					placeholder="Enter Value"
+					aria-label="Search table name"
+					autocomplete="off"
+				/>
+				<div aria-hidden="true">
+					<i data-lucide="search" class="h-5 w-5"></i>
+				</div>
+			</label>
+			<a
+				href="/define-table"
+				hx-get="/pages/define-clickhouse-table.html"
+				hx-target="#main-content"
+				hx-push-url="/define-table"
+				class="inline-flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-semibold !text-white !no-underline transition hover:brightness-95"
+			>
+				Define New Table
+			</a>
+		</div>
+
+		<div class="mt-4 w-full overflow-x-auto">
+			<table class="pkts-data-table mn-data-table w-full">
+				<thead>
+					<tr>
+						<th scope="col" class="whitespace-nowrap">
+							<div class="labelWrapper">
+								<span>Type</span>
+								<button
+									type="button"
+									class="inline-flex text-inherit opacity-70 transition-opacity hover:opacity-100"
+									data-sort="type"
+									aria-label="Sort by type"
+								>
+									<i data-lucide="chevrons-up-down" class="h-4 w-4"></i>
+								</button>
+								<button
+									type="button"
+									class="inline-flex text-inherit opacity-70 transition-opacity hover:opacity-100"
+									data-filter="type"
+									aria-label="Filter by type"
+								>
+									<i data-lucide="filter" class="h-4 w-4"></i>
+								</button>
+							</div>
+						</th>
+						<th scope="col">
+							<div class="labelWrapper">Table Name</div>
+						</th>
+						<!-- Created By is unconfirmed — the API has no concept of users (see #3). -->
+						<th scope="col" class="whitespace-nowrap">
+							<div class="labelWrapper">
+								<span>Created By</span>
+								<button
+									type="button"
+									class="inline-flex text-inherit opacity-70 transition-opacity hover:opacity-100"
+									data-filter="created_by"
+									aria-label="Filter by created by"
+								>
+									<i data-lucide="filter" class="h-4 w-4"></i>
+								</button>
+							</div>
+						</th>
+						<th scope="col" class="whitespace-nowrap">
+							<div class="labelWrapper">
+								<span>Created Date</span>
+								<button
+									type="button"
+									class="inline-flex text-inherit opacity-70 transition-opacity hover:opacity-100"
+									data-filter="created_at"
+									aria-label="Filter by created date"
+								>
+									<i data-lucide="filter" class="h-4 w-4"></i>
+								</button>
+							</div>
+						</th>
+					</tr>
+				</thead>
+
+				<tbody id="tables-rows">
+					<tr>
+						<td colspan="4" class="text-center text-copy-alt">Loading…</td>
+					</tr>
+				</tbody>
+
+				<tfoot id="tables-foot">
+					<tr>
+						<td colspan="4">
+							<div class="mn-page-tiles" id="tables-pager"></div>
+						</td>
+					</tr>
+				</tfoot>
+			</table>
+		</div>
+	</div>
+</section>
+
+<script type="module">
+	// Rows come from our API (GET /api/table/), which serves dummy tables for
+	// now and will call MetrANOVA (GET /type/ and GET /metadata/) later.
+	// Search, sort and paging are client-side until the API takes them.
+	import {
+		onPagerClick,
+		pageCount,
+		pageSlice,
+		renderPager,
+	} from "/scripts/utils/data-table-pager.js";
+
+	const PAGE_SIZE = 10;
+
+	const TYPES = {
+		data: { label: "Data Table", icon: "table-2" },
+		metadata: { label: "Metadata Table", icon: "file-json" },
+	};
+
+	const rowsEl = document.getElementById("tables-rows");
+	const pagerEl = document.getElementById("tables-pager");
+	const footEl = document.getElementById("tables-foot");
+	const searchEl = document.getElementById("tables-search");
+	const sortEl = document.querySelector("[data-sort='type']");
+
+	let tables = [];
+	let query = "";
+	let page = 1;
+	let sortDir = 0; // 0 = as listed, 1 = data first, -1 = metadata first
+
+	function escapeHtml(value) {
+		return String(value ?? "")
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;")
+			.replace(/"/g, "&quot;");
+	}
+
+	// 2027-04-12 -> 04/12/27, as in the mockup
+	function shortDate(iso) {
+		const [year, month, day] = String(iso ?? "").split("-");
+		return year && month && day ? `${month}/${day}/${year.slice(-2)}` : iso ?? "";
+	}
+
+	function message(text) {
+		rowsEl.innerHTML = `<tr><td colspan="4" class="text-center text-copy-alt">${escapeHtml(
+			text,
+		)}</td></tr>`;
+		footEl.style.display = "none";
+	}
+
+	function visibleRows() {
+		const q = query.trim().toLowerCase();
+		let rows = q ? tables.filter((row) => row.table_name.toLowerCase().includes(q)) : tables;
+		if (sortDir) {
+			rows = [...rows].sort((a, b) => sortDir * a.table_type.localeCompare(b.table_type));
+		}
+		return rows;
+	}
+
+	function typeChip(type) {
+		const { label, icon } = TYPES[type] ?? TYPES.data;
+		return `<span class="pkts-chip cursor-default whitespace-nowrap"><i data-lucide="${icon}" class="h-4 w-4"></i>${label}</span>`;
+	}
+
+	function renderRows(rows) {
+		if (!rows.length) {
+			message(tables.length ? "No tables match that search." : "No tables yet.");
+			return;
+		}
+		rowsEl.innerHTML = rows
+			.map((row) => {
+				const name = escapeHtml(row.table_name);
+				return `
+					<tr
+						class="cursor-pointer"
+						hx-get="/pages/clickhouse-table-detail.html"
+						hx-target="#main-content"
+						hx-push-url="/table-details?name=${encodeURIComponent(row.table_name)}"
+					>
+						<td data-parent="Type">${typeChip(row.table_type)}</td>
+						<td data-parent="Table Name" title="${name}">${name}</td>
+						<td data-parent="Created By" class="whitespace-nowrap">${escapeHtml(row.created_by)}</td>
+						<td data-parent="Created Date" class="whitespace-nowrap">${shortDate(row.created_at)}</td>
+					</tr>
+				`;
+			})
+			.join("");
+		// Rows are rendered after htmx scanned the page, so their hx-* need processing.
+		window.htmx?.process(rowsEl);
+	}
+
+	function render() {
+		const rows = visibleRows();
+		const total = pageCount(rows.length, PAGE_SIZE);
+		page = Math.min(page, total);
+		renderRows(pageSlice(rows, page, PAGE_SIZE));
+		if (rows.length) renderPager(pagerEl, footEl, page, total);
+		window.lucide?.createIcons();
+	}
+
+	// The icon shows the current order: up = data first, down = metadata first.
+	function renderSortIcon() {
+		const icon =
+			sortDir === 1 ? "arrow-up" : sortDir === -1 ? "arrow-down" : "chevrons-up-down";
+		sortEl.innerHTML = `<i data-lucide="${icon}" class="h-4 w-4"></i>`;
+		sortEl.setAttribute(
+			"aria-label",
+			sortDir === 1
+				? "Sorted by type, ascending"
+				: sortDir === -1
+				  ? "Sorted by type, descending"
+				  : "Sort by type",
+		);
+	}
+
+	searchEl.addEventListener("input", (event) => {
+		query = event.target.value;
+		page = 1;
+		render();
+	});
+
+	sortEl.addEventListener("click", () => {
+		sortDir = sortDir === 1 ? -1 : 1;
+		renderSortIcon();
+		page = 1;
+		render();
+	});
+
+	onPagerClick(pagerEl, (n) => {
+		page = n;
+		render();
+	});
+
+	try {
+		const response = await fetch(`${window.ADMINUI_API_BASE}/table/`);
+		if (!response.ok) throw new Error(`HTTP ${response.status}`);
+		tables = await response.json();
+		render();
+	} catch (error) {
+		console.error("Could not load tables:", error);
+		message("Could not load tables. Is the API running?");
+	}
+</script>
