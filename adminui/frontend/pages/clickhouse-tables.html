@@ -142,7 +142,7 @@
 			.replace(/"/g, "&quot;");
 	}
 
-	// 2027-04-12 -> 04/12/27, as in the mockup
+	// 2026-04-12 -> 04/12/26, the date format in the mockup
 	function shortDate(iso) {
 		const [year, month, day] = String(iso ?? "").split("-");
 		return year && month && day ? `${month}/${day}/${year.slice(-2)}` : iso ?? "";
