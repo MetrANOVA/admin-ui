@@ -476,21 +476,21 @@
 		};
 	}
 
-	// Text goes to the Packets input. Booleans, numbers and arrays stay on
-	// JSONForms' own renderers for now, because pkts-form-control reads and
-	// writes `value` as-is (the mismatch tracked in #11):
-	//   - the Packets switch/checkbox work through `checked`, so a boolean comes
-	//     back as "on";
-	//   - pkts-input-number hands back a string, so an edited integer fails the
-	//     schema with "must be integer".
-	// Moving them over later is one line each here.
+	// Text and booleans go to the Packets inputs (customRenderer.js turns the
+	// checkbox's `checked` into true/false). Numbers stay on JSONForms' own
+	// renderer until customRenderer.js converts typed text to a number;
+	// pkts-input-number hands back a string, which fails "must be integer".
+	// Arrays stay on JSONForms' list renderer.
 	function layoutFor() {
 		return {
 			type: "VerticalLayout",
 			elements: EDITABLE.map((col) => {
 				const control = { type: "Control", scope: `#/properties/${col.name}` };
-				if (propertyFor(col.type).type === "string") {
+				const { type } = propertyFor(col.type);
+				if (type === "string") {
 					control.customComponent = "pkts-input-text";
+				} else if (type === "boolean") {
+					control.customComponent = "pkts-input-checkbox";
 				}
 				return control;
 			}),

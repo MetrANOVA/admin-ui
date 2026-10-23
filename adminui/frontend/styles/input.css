@@ -1337,7 +1337,7 @@ json-form[data-readonly]
 
 /* =========================================================
    Record editor (Metadata Manager)
-   JSONForms' own boolean and array renderers come unstyled; these
+   JSONForms' own number and array renderers come unstyled; these
    rules dress them for the record editor. The array rules mirror
    .pipeline-json-form and can merge with it once the two forms share
    a class.
@@ -1346,16 +1346,22 @@ json-form[data-readonly]
 #records-fields .form-container label {
 	color: var(--copy);
 }
+/* components.css strips the border and background from every
+   .form-container input, which hides the Packets checkbox. Put its box
+   back, the same way the Clickhouse table form does. */
+#records-fields .pkts-input-checkbox input[type="checkbox"] {
+	flex: none;
+	width: 1.5rem;
+	height: 1.5rem;
+	border: 3px solid var(--copy-alt);
+	border-radius: 0.375rem;
+	background-color: var(--default-surface);
+	cursor: pointer;
+}
 #records-fields .control {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
-}
-#records-fields .control:has(input[type="checkbox"]) {
-	flex-direction: row-reverse;
-	justify-content: flex-end;
-	align-items: center;
-	gap: 0.75rem;
 }
 #records-fields .control .label,
 #records-fields .array-list-label {
@@ -1363,13 +1369,7 @@ json-form[data-readonly]
 	font-weight: 500;
 	color: var(--copy);
 }
-#records-fields .control input[type="checkbox"] {
-	width: 1.25rem;
-	height: 1.25rem;
-	accent-color: var(--primary);
-}
-#records-fields .control input[type="number"],
-#records-fields .control input[type="text"] {
+#records-fields .control input[type="number"] {
 	width: 100%;
 	height: 42px;
 	padding: 0 0.5rem;
