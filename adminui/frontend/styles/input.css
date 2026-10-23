@@ -1600,12 +1600,12 @@ json-form[data-readonly]
 
 /* =========================================================
    Record editor (Metadata Manager)
-   JSONForms' own number and array renderers come unstyled; these
-   rules dress them for the record editor. The array rules mirror
+   JSONForms' own array renderer comes unstyled; these rules dress it
+   for the record editor. The array rules mirror
    .pipeline-json-form and can merge with it once the two forms share
    a class.
    ========================================================= */
-/* components.css gives these labels a fixed dark colour */
+/* The field labels come out a fixed dark grey, unreadable in the dark theme */
 #records-fields .form-container label {
 	color: var(--copy);
 }
@@ -1630,15 +1630,6 @@ json-form[data-readonly]
 #records-fields .array-list-label {
 	font-size: 14px;
 	font-weight: 500;
-	color: var(--copy);
-}
-#records-fields .control input[type="number"] {
-	width: 100%;
-	height: 42px;
-	padding: 0 0.5rem;
-	border: 1px solid var(--copy-alt);
-	border-radius: 2px;
-	background: var(--background);
 	color: var(--copy);
 }
 #records-fields .control .error {
