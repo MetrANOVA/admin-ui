@@ -1,18 +1,38 @@
 import "/components/index.js";
 import "/scripts/customRenderer.js";
 import { confirmDialog } from "/components/pkts-modal.js";
+import {
+	createIcon,
+	handleFormActions,
+	mountForm,
+	onPageLoad,
+	replaceWithTwin,
+	setPageMode,
+	syncDisabledState,
+	upgradeDeleteButtons,
+	validateForm,
+	watchForm,
+} from "/scripts/utils/json-form-page.js";
 
 import pipelineFormDefinition from "/form_schemas/pipeline-form.js";
 
 const { schema, uiSchema, initialData } = pipelineFormDefinition;
 
+const FORM_ID = "pipeline-form";
 const FORM_SELECTOR = "#pipeline-json-form";
+
+const PAGE = {
+	page: ".pipeline-page",
+	title: "#pipeline-title",
+	actions: "#pipeline-success-actions",
+	editTitle: "Define Pipeline",
+};
 
 /* =========================================================
    JSON Form lifecycle
    ========================================================= */
 
-function initializePipelinePage(container = document) {
+function initializePipelinePage(container) {
 	const jsonForm = container.matches?.(FORM_SELECTOR)
 		? container
 		: container.querySelector(FORM_SELECTOR);
@@ -25,11 +45,7 @@ function initializePipelinePage(container = document) {
 	jsonForm.setAttribute("form-data", JSON.stringify(initialData));
 }
 
-initializePipelinePage(document);
-
-document.body.addEventListener("htmx:afterSwap", (event) => {
-	initializePipelinePage(event.detail?.target ?? event.target);
-});
+onPageLoad(initializePipelinePage);
 
 /* =========================================================
    Array list config
@@ -72,30 +88,8 @@ function getListConfig(legend) {
    Helpers
    ========================================================= */
 
-function createIcon(name, size = "16") {
-	const icon = document.createElement("pkts-icon");
-	icon.setAttribute("name", name);
-	icon.setAttribute("size", size);
-	return icon;
-}
-
 function setRole(el, role) {
 	if (el && el.dataset.role !== role) el.dataset.role = role;
-}
-
-function replaceWithTwin(nativeBtn, twin) {
-	twin.dataset.twin = "true";
-	twin.addEventListener("click", (event) => {
-		event.preventDefault();
-		event.stopPropagation();
-		if (twin.hasAttribute("disabled")) return;
-		nativeBtn.click();
-	});
-	nativeBtn.dataset.replaced = "true";
-	nativeBtn.setAttribute("aria-hidden", "true");
-	nativeBtn.tabIndex = -1;
-	nativeBtn.after(twin);
-	twin.toggleAttribute("disabled", nativeBtn.disabled);
 }
 
 // Finds a pkts-form-control by schema property name.
@@ -141,31 +135,6 @@ function upgradeAddButtons(form) {
 		btn.append(createIcon("plus"), document.createTextNode("Add"));
 
 		replaceWithTwin(nativeBtn, btn);
-	});
-}
-
-function upgradeDeleteButtons(form) {
-	form.querySelectorAll("button.array-list-item-delete").forEach((nativeBtn) => {
-		if (nativeBtn.dataset.replaced) return;
-
-		const btn = document.createElement("pkts-icon-button");
-		btn.className = "array-list-item-delete-pkts";
-		btn.setAttribute("type", "button");
-		btn.setAttribute("variant", "tertiary");
-		btn.setAttribute("aria-label", "Delete");
-		btn.append(createIcon("trash-2"));
-
-		replaceWithTwin(nativeBtn, btn);
-	});
-}
-
-function syncDisabledState(form) {
-	form.querySelectorAll('button[data-replaced="true"]').forEach((nativeBtn) => {
-		const twin = nativeBtn.nextElementSibling;
-		if (!twin?.dataset.twin) return;
-		if (twin.hasAttribute("disabled") !== nativeBtn.disabled) {
-			twin.toggleAttribute("disabled", nativeBtn.disabled);
-		}
 	});
 }
 
@@ -254,44 +223,25 @@ function syncMatchFieldChips(form) {
 	});
 }
 
-function enhancePipelineForms() {
-	document.querySelectorAll(FORM_SELECTOR).forEach((form) => {
-		tagArrayLists(form);
-		upgradeAddButtons(form);
-		upgradeDeleteButtons(form);
-		syncDisabledState(form);
-		tagRuleRows(form);
-		syncMatchFieldChips(form);
-	});
+function enhancePipelineForm(form) {
+	tagArrayLists(form);
+	upgradeAddButtons(form);
+	upgradeDeleteButtons(form);
+	syncDisabledState(form);
+	tagRuleRows(form);
+	syncMatchFieldChips(form);
 }
 
 /* =========================================================
    Re-apply after every JSON Forms render
    ========================================================= */
 
-let enhancementScheduled = false;
-
-new MutationObserver(() => {
-	if (enhancementScheduled) return;
-	enhancementScheduled = true;
-	requestAnimationFrame(() => {
-		enhancementScheduled = false;
-		enhancePipelineForms();
-	});
-}).observe(document.body, {
-	childList: true,
-	subtree: true,
-	attributes: true,
-	attributeFilter: ["disabled"],
-});
+watchForm(FORM_SELECTOR, { frame: enhancePipelineForm });
 
 document.addEventListener("change", () => {
-	document.querySelectorAll(FORM_SELECTOR).forEach((form) => {
-		syncMatchFieldChips(form);
-	});
+	const form = document.querySelector(FORM_SELECTOR);
+	if (form) syncMatchFieldChips(form);
 });
-
-enhancePipelineForms();
 
 /* =========================================================
    Form data
@@ -305,18 +255,6 @@ function stripUiOnlyKeys(data) {
 		...data,
 		columns: data.columns.map(({ match_field_mirror, ...column }) => column),
 	};
-}
-
-function getFormData() {
-	const elem = document.querySelector(FORM_SELECTOR);
-	if (!elem?.serializeForm) return null;
-
-	try {
-		return stripUiOnlyKeys(JSON.parse(elem.serializeForm()));
-	} catch (error) {
-		console.error("Could not read form data:", error);
-		return null;
-	}
 }
 
 /* =========================================================
@@ -339,7 +277,7 @@ function createPreview(text) {
 	preview.innerHTML = `
 		<p class="pipeline-save-preview__label">Preview</p>
 		<div class="pipeline-save-preview__code-wrap">
-			<pkts-chip rounded="" class="pipeline-save-preview__badge">SQL</pkts-chip>
+			<pkts-chip rounded="" class="pipeline-save-preview__badge">JSON</pkts-chip>
 			<button type="button" class="pipeline-save-preview__copy" aria-label="Copy preview">
 				<pkts-icon name="copy" size="16"></pkts-icon>
 			</button>
@@ -372,53 +310,15 @@ function toFormData(data) {
 	};
 }
 
-// Swap in a fresh <json-form>. All attributes are set before it is inserted.
-function mountForm(formData, { readonly }) {
-	const current = document.querySelector(FORM_SELECTOR);
-	if (!current) return;
-
-	const next = document.createElement("json-form");
-	next.id = current.id;
-	next.className = current.className;
-	next.setAttribute("schema-data", JSON.stringify(schema));
-	next.setAttribute("layout-data", JSON.stringify(uiSchema));
-	next.setAttribute("form-data", JSON.stringify(formData));
-
-	if (readonly) {
-		next.setAttribute("readonly", "true");
-		next.setAttribute("data-readonly", ""); // so the readonly CSS applies immediately
-		next.dataset.mode = "saved";
-	}
-
-	current.replaceWith(next);
-}
-
-function setPageMode(mode) {
-	const page = document.querySelector(".pipeline-page");
-	const title = document.getElementById("pipeline-title");
-	const actions = document.getElementById("pipeline-success-actions");
-	if (!page) return;
-
-	if (mode === "saved") {
-		page.dataset.mode = "saved";
-		if (title) title.textContent = "Success!";
-		if (actions) actions.hidden = false;
-	} else {
-		delete page.dataset.mode;
-		if (title) title.textContent = "Define Pipeline";
-		if (actions) actions.hidden = true;
-	}
-}
-
 function showSuccess(data) {
-	mountForm(toFormData(data), { readonly: true });
-	setPageMode("saved");
+	mountForm(FORM_SELECTOR, { schema, uiSchema }, toFormData(data), { readonly: true });
+	setPageMode(PAGE, "saved");
 	window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function showEditMode() {
-	mountForm(initialData, { readonly: false });
-	setPageMode("edit");
+	mountForm(FORM_SELECTOR, { schema, uiSchema }, initialData, { readonly: false });
+	setPageMode(PAGE, "edit");
 }
 
 document.addEventListener("click", (event) => {
@@ -426,101 +326,35 @@ document.addEventListener("click", (event) => {
 });
 
 /* =========================================================
-   Validation
-   ========================================================= */
-
-// Hidden rows may stay in the DOM, so only check controls the user can see
-const isVisible = (el) => el.getClientRects().length > 0;
-
-function getVisibleControls(form) {
-	return [...form.querySelectorAll("pkts-form-control")].filter(isVisible);
-}
-
-function focusFirstInvalid(form) {
-	// markDirty() has already updated data-invalid, so wait one frame for layout
-	requestAnimationFrame(() => {
-		const first = form.querySelector("pkts-form-control[data-invalid]");
-		if (!first) return;
-
-		first.scrollIntoView({ behavior: "smooth", block: "center" });
-		first.focus();
-	});
-}
-
-// Returns { valid, data }. Shows errors on every visible field when invalid.
-// The "markAllDirty" handler in customRenderer.js shows the error banner.
-function validatePipelineForm() {
-	const form = document.querySelector(FORM_SELECTOR);
-	if (!form?.validate || !form?.serializeForm) return { valid: false, data: null };
-
-	// 1. Schema validation (required, minLength, minItems, allOf conditions)
-	const schemaValid = form.validate();
-
-	// 2. Reveal errors. Query after validate() in case it re-rendered controls.
-	const controls = getVisibleControls(form);
-	controls.forEach((control) => control.markDirty());
-
-	// 3. Per-field validity (required + errors reported by JSON Forms)
-	const controlsValid = controls.every((control) => control.checkValidity());
-
-	// 4. Nothing entered at all
-	const data = getFormData();
-	const isEmpty = !data || Object.keys(data).length === 0;
-
-	const valid = schemaValid && controlsValid && !isEmpty;
-
-	if (!valid) {
-		document.dispatchEvent(new CustomEvent("markAllDirty"));
-		focusFirstInvalid(form);
-	}
-
-	return { valid, data };
-}
-
-/* =========================================================
    Save flow
    ========================================================= */
 
-let saveInFlight = false;
+const hasData = (data) => Boolean(data) && Object.keys(data).length > 0;
 
 async function confirmAndSave() {
-	// Ignore stray save events while showing the success view
-	if (document.querySelector(FORM_SELECTOR)?.dataset.mode === "saved") return;
-	if (saveInFlight) return;
+	// 1. Validate. The dialog only opens if this passes.
+	const result = validateForm(document.querySelector(FORM_SELECTOR), hasData);
+	if (!result.valid) return;
 
-	saveInFlight = true;
+	const data = stripUiOnlyKeys(result.data);
+	document.dispatchEvent(new Event("validated"));
 
-	try {
-		// 1. Validate. The dialog only opens if this passes.
-		const { valid, data } = validatePipelineForm();
-		if (!valid) return;
+	// 2. Confirm (resolves true/false, so no listeners pile up between attempts)
+	const pipelineName = data.name || "pipeline_name";
 
-		document.dispatchEvent(new Event("validated"));
+	const confirmed = await confirmDialog({
+		question: `Are you sure you want to create pipeline ${pipelineName}?`,
+		highlight: pipelineName,
+		confirmLabel: "Save",
+		confirmIcon: "save",
+		body: createPreview(buildPreviewText(data)),
+	});
 
-		// 2. Confirm (resolves true/false, so no listeners pile up between attempts)
-		const pipelineName = data.name || "pipeline_name";
+	if (!confirmed) return;
 
-		const confirmed = await confirmDialog({
-			question: `Are you sure you want to create pipeline ${pipelineName}?`,
-			highlight: pipelineName,
-			confirmLabel: "Save",
-			confirmIcon: "save",
-			body: createPreview(buildPreviewText(data)),
-		});
-
-		if (!confirmed) return;
-
-		// 3. API call goes here once the payload conversion is settled.
-		// Show the success view only after it succeeds.
-		showSuccess(data);
-	} finally {
-		saveInFlight = false;
-	}
+	// 3. API call goes here once the payload conversion is settled.
+	// Show the success view only after it succeeds.
+	showSuccess(data);
 }
 
-document.body.addEventListener("form-save", confirmAndSave);
-
-// Stop the browser from submitting or navigating on its own (Enter key, requestSubmit)
-document.addEventListener("submit", (event) => {
-	if (event.target.id === "pipeline-form") event.preventDefault();
-});
+handleFormActions({ formId: FORM_ID, jsonForm: FORM_SELECTOR, onSave: confirmAndSave });

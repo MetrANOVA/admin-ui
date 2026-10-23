@@ -617,10 +617,12 @@ json-form .horizontal-layout-item {
 }
 
 /* =========================================================
-   Define Pipeline page
+   Define Pipeline + Create New Clickhouse Table pages
+   Both pages share these rules; each keeps its own class names.
    ========================================================= */
 
-.pipeline-page {
+.pipeline-page,
+.table-page {
 	display: flex;
 	flex-direction: column;
 	width: min(calc(100% - 2rem), 80rem);
@@ -630,12 +632,14 @@ json-form .horizontal-layout-item {
 	gap: 2rem;
 }
 
-.pipeline-page__title {
+.pipeline-page__title,
+.table-page__title {
 	width: auto;
 	text-align: center;
 }
 
-.pipeline-panel {
+.pipeline-panel,
+.table-panel {
 	width: 100%;
 	min-width: 0;
 	padding: 1.75rem;
@@ -659,16 +663,249 @@ json-form .horizontal-layout-item {
 .pipeline-page[data-mode="saved"] pkts-form-actions,
 .pipeline-page[data-mode="saved"] .array-list-add,
 .pipeline-page[data-mode="saved"] .array-list-item-toolbar,
-.pipeline-page[data-mode="saved"] [data-twin] {
+.pipeline-page[data-mode="saved"] [data-twin],
+.table-page[data-mode="saved"] pkts-form-actions,
+.table-page[data-mode="saved"] .array-list-add,
+.table-page[data-mode="saved"] .array-list-item-toolbar,
+.table-page[data-mode="saved"] [data-twin] {
 	display: none;
 }
 
-.pipeline-success-actions {
+.pipeline-success-actions,
+.table-success-actions {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: flex-end;
 	gap: 0.75rem;
 	margin-top: 1.5rem;
+}
+
+/* =========================================================
+   Create New Clickhouse Table: Table Fields list
+   One header row, then rows of
+   [Field Name] [Field Type] [Primary Key] [Nullable] [delete]
+   ========================================================= */
+
+.table-json-form fieldset.table-fields-list {
+	gap: 0;
+	padding: 1.5rem 1.75rem;
+	background: var(--surface-2);
+	border-radius: 0.25rem;
+}
+
+/* The legend sits above the panel, like the other field labels */
+.table-json-form .table-fields-list > legend.array-list-legend {
+	float: left;
+	width: calc(100% + 3.5rem);
+	margin: -1.5rem -1.75rem 1.5rem;
+	padding-bottom: 0.5rem;
+	background: var(--surface-1);
+}
+
+.table-json-form .table-fields-list > .array-list-item-wrapper {
+	clear: both;
+	margin-bottom: 0.75rem;
+}
+
+.table-json-form .table-fields-list .array-list-item {
+	align-items: flex-end;
+	gap: 0.75rem;
+}
+
+/* Inputs share the row; the checkboxes get fixed, centred columns */
+.table-json-form .table-fields-list .horizontal-layout {
+	align-items: end;
+	gap: 0.75rem;
+}
+
+.table-json-form .table-fields-list .horizontal-layout > .horizontal-layout-item:nth-child(-n + 2) {
+	flex: 1 1 0;
+}
+
+.table-json-form .table-fields-list .horizontal-layout > .horizontal-layout-item:nth-child(n + 3) {
+	flex: 0 0 6rem;
+	display: flex;
+	justify-content: center;
+	text-align: center;
+}
+
+/* Rows stay aligned: no "Required" hint, and errors sit under the input
+   without changing the row's height */
+.table-json-form .table-fields-list .form-container {
+	position: relative;
+}
+
+.table-json-form .table-fields-list pkts-form-control:not([data-invalid]) pkts-input-message,
+.table-json-form .table-fields-list pkts-input-message .required {
+	display: none;
+}
+
+.table-json-form .table-fields-list pkts-input-message {
+	position: absolute;
+	top: calc(100% + 0.25rem);
+	left: 0;
+	font-size: 0.75rem;
+	line-height: 1rem;
+	white-space: nowrap;
+}
+
+/* Don't show the grey "Required" hint next to a red "Required" error */
+.table-json-form pkts-form-control[data-invalid] pkts-input-message .required {
+	display: none;
+}
+
+/* Make room for the error line under a row that has one */
+.table-json-form
+	.table-fields-list
+	> .array-list-item-wrapper:has(pkts-form-control[data-invalid]) {
+	margin-bottom: 1.75rem;
+}
+
+/* .form-container reserves 56px for label + input; rows without labels are shorter */
+.table-json-form .table-fields-list .form-container {
+	min-height: 0;
+}
+
+.table-json-form .table-fields-list .horizontal-layout-item:nth-child(n + 3) .form-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+/* Packets checkbox is 24px; centre it against the 40px inputs */
+.table-json-form .table-fields-list .pkts-input-checkbox {
+	margin-block: 0.5rem;
+}
+
+/* components.css gives every .form-container input a 40px height and strips
+   its border/background, which stretches and hides the checkbox.
+   Put the Packets 24px box back. */
+.table-json-form .table-fields-list .pkts-input-checkbox input[type="checkbox"] {
+	flex: none;
+	width: 1.5rem;
+	height: 1.5rem;
+	border: 3px solid var(--copy-alt);
+	border-radius: 0.375rem;
+	background-color: var(--default-surface);
+	cursor: pointer;
+}
+
+/* Field Type dropdown: the option list is part of the page flow in
+   components.css, so opening it made the row taller and pushed the other
+   columns down. In rows, float it over the content below instead. */
+.table-json-form .table-fields-list .ps-dropdown {
+	position: relative;
+}
+
+.table-json-form .table-fields-list .ps-dropdown .ps-options {
+	position: absolute;
+	top: 100%;
+	left: -1px;
+	right: -1px;
+	z-index: 20;
+}
+
+.table-json-form .table-fields-list .ps-dropdown .ps-options.open {
+	box-shadow: 0 0 0 var(--pkts-size-border-width-small, 0.125rem)
+		var(--pkts-color-core-blue-400, #00b6f2);
+}
+
+/* A locked checkbox (Nullable on a Primary Key row) looks unavailable.
+   The read-only success view disables everything, so leave it alone. */
+.table-json-form:not([data-readonly])
+	.table-fields-list
+	.pkts-input-checkbox
+	input[type="checkbox"]:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+/* Column labels only on the first row */
+.table-json-form
+	.table-fields-list
+	> .array-list-item-wrapper
+	~ .array-list-item-wrapper
+	:is(pkts-input-label, .readonly-label) {
+	display: none;
+}
+
+/* Toolbar: only the delete button, to the right of the inputs */
+.table-json-form .table-fields-list .array-list-item-toolbar {
+	flex-direction: row;
+	align-items: center;
+	height: 2.5rem;
+	margin-left: 0.5rem;
+}
+
+.table-json-form .table-fields-list :is(.array-list-item-move-up, .array-list-item-move-down) {
+	display: none;
+}
+
+/* Round "+" under the rows. Packets copies the class onto the inner
+   <button> too, so target the host element only, and keep it from
+   stretching across the row (which made the empty space clickable). */
+.table-json-form pkts-button.table-fields-add {
+	display: flex;
+	width: fit-content;
+	margin-top: 0.75rem;
+}
+
+.table-json-form .table-fields-add button {
+	min-height: auto;
+	padding: 4px 14px;
+	border: none;
+	border-radius: 999px;
+	background-color: var(--secondary);
+	color: var(--default-surface);
+}
+
+.table-json-form .table-fields-add button:hover {
+	background-color: var(--default-hover);
+}
+
+/* =========================================================
+   Create New Clickhouse Table: confirm dialog field table
+   ========================================================= */
+
+/* Pager sits on the same grey band as the header, as in the mockup */
+pkts-modal .table-confirm-preview tfoot td {
+	padding: 0.5rem;
+	background: var(--copy-alt);
+}
+
+pkts-modal .table-confirm-preview tbody td {
+	padding-block: 0.5rem;
+}
+
+/* True/False chips in field tables (confirm dialog, table detail),
+   scripts/utils/clickhouse-fields-table.js. Grey is the mockup's actions/grey. */
+.table-chip {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 3rem;
+	min-height: 2rem;
+	padding: 0.25rem 0.5rem;
+	border-radius: 0.75rem;
+	font-size: 0.75rem;
+	font-weight: 500;
+	line-height: 1rem;
+}
+
+.table-chip--outline {
+	border: 1px solid #454547;
+}
+
+.table-chip--filled {
+	border: 1px solid transparent;
+	background: #454547;
+	color: #ffffff;
+}
+
+/* API/validation errors on the Create New Clickhouse Table page */
+.table-form-errors {
+	margin-top: 1rem;
+	color: var(--error, #e5484d);
 }
 
 /* =========================================================
@@ -695,14 +932,16 @@ json-form .horizontal-layout-item {
    Array list: shared layout
    ========================================================= */
 
-.pipeline-json-form .array-list {
+.pipeline-json-form .array-list,
+.table-json-form .array-list {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
 	--heading-offset: 34px;
 }
 
-.pipeline-json-form .array-list-item {
+.pipeline-json-form .array-list-item,
+.table-json-form .array-list-item {
 	display: flex;
 	flex-direction: row;
 }
@@ -736,6 +975,26 @@ fieldset.array-list .array-list-item-label,
 	display: none;
 }
 
+/* Message under a required list (added by scripts/utils/json-form-page.js):
+   "Required" like the hint under inputs, or the error after Save */
+json-form .array-list-message {
+	margin: 0.25rem 0 0;
+	font-size: 12px;
+	text-align: right;
+	color: var(--copy-alt);
+}
+
+json-form .array-list-message.error {
+	text-align: left;
+	color: #eb3321;
+}
+
+/* Shown above Save/Cancel when validation fails with nothing highlighted */
+.form-fallback-error {
+	margin-top: 1rem;
+	color: var(--error, #e5484d);
+}
+
 fieldset.array-list .array-list-item:has(label) label {
 	font-size: 0.875rem;
 	font-weight: 500;
@@ -745,7 +1004,8 @@ fieldset.array-list .array-list-item:has(label) label {
    Array list: legend (label + Add button)
    ========================================================= */
 
-.pipeline-json-form .array-list-legend {
+.pipeline-json-form .array-list-legend,
+.table-json-form .array-list-legend {
 	display: flex;
 	flex-direction: row;
 	direction: ltr;
@@ -755,7 +1015,8 @@ fieldset.array-list .array-list-item:has(label) label {
 	margin-bottom: 8px;
 }
 
-.pipeline-json-form .array-list-legend .array-list-label {
+.pipeline-json-form .array-list-legend .array-list-label,
+.table-json-form .array-list-legend .array-list-label {
 	order: 1;
 	display: flex;
 	flex-direction: row;
@@ -773,7 +1034,8 @@ fieldset.array-list:not(:has(.array-list-item)) legend.array-list-legend {
 }
 
 /* Native buttons stay in the DOM (so .click() works) but are hidden */
-.pipeline-json-form button[data-replaced="true"] {
+.pipeline-json-form button[data-replaced="true"],
+.table-json-form button[data-replaced="true"] {
 	display: none;
 }
 
@@ -894,7 +1156,8 @@ fieldset.array-list:not(:has(.array-list-item)) legend.array-list-legend {
    ========================================================= */
 
 /* Fields: share the free space equally */
-.pipeline-json-form .horizontal-layout > .horizontal-layout-item {
+.pipeline-json-form .horizontal-layout > .horizontal-layout-item,
+.table-json-form .horizontal-layout > .horizontal-layout-item {
 	flex: 1 1 0;
 	width: auto;
 	min-width: 0;

@@ -1,4 +1,4 @@
-<section class="flex flex-col items-center gap-4 px-[max(6rem,9.6vw)] pt-[max(4rem,12vh)] pb-[88px]">
+<section class="flex flex-col items-center gap-4 px-[max(6rem,9.6vw)] pt-16 pb-[88px]">
 	<div class="flex w-full max-w-[1348px] flex-col items-center gap-6">
 		<div class="flex items-center justify-center gap-3">
 			<i data-lucide="workflow" class="h-8 w-8 shrink-0 text-copy"></i>
@@ -96,10 +96,7 @@
 				<tfoot id="pipelines-foot">
 					<tr>
 						<td colspan="4">
-							<div
-								class="mn-page-tiles"
-								id="pipelines-pager"
-							></div>
+							<div class="mn-page-tiles" id="pipelines-pager"></div>
 						</td>
 					</tr>
 				</tfoot>
@@ -124,20 +121,20 @@
 	};
 
 	const PLACEHOLDER = [
-		["all_interfaces", "def_interface", "07/13/27"],
-		["data_flow", "def_flow", "04/12/27"],
-		["data_flow_by_edge_as_1d", "def_flow", "07/13/27"],
-		["data_flow_by_edge_as_1d_mv", "def_flow", "04/12/27"],
-		["meta_interface", "meta_interface", "07/13/27"],
-		["data_flow_by_edge_as_5m", "def_flow", "07/13/27"],
-		["data_flow_by_edge_as_5m_mv", "def_flow", "04/12/27"],
-		["data_flow_by_edge_esdb_5m", "def_flow", "07/13/27"],
-		["meta_interface_esdb", "meta_interface", "04/12/27"],
-		["meta_organization", "meta_organization", "07/13/27"],
-		["meta_ip", "meta_ip", "07/13/27"],
-		["meta_device", "meta_device", "07/13/27"],
-		["data_flow_by_pop_1h", "def_flow", "05/02/27"],
-		["meta_as", "meta_as", "05/02/27"],
+		["all_interfaces", "def_interface", "07/13/26"],
+		["data_flow", "def_flow", "04/12/26"],
+		["data_flow_by_edge_as_1d", "def_flow", "07/13/26"],
+		["data_flow_by_edge_as_1d_mv", "def_flow", "04/12/26"],
+		["meta_interface", "meta_interface", "07/13/26"],
+		["data_flow_by_edge_as_5m", "def_flow", "07/13/26"],
+		["data_flow_by_edge_as_5m_mv", "def_flow", "04/12/26"],
+		["data_flow_by_edge_esdb_5m", "def_flow", "07/13/26"],
+		["meta_interface_esdb", "meta_interface", "04/12/26"],
+		["meta_organization", "meta_organization", "07/13/26"],
+		["meta_ip", "meta_ip", "07/13/26"],
+		["meta_device", "meta_device", "07/13/26"],
+		["data_flow_by_pop_1h", "def_flow", "05/02/26"],
+		["meta_as", "meta_as", "05/02/26"],
 	].map(([id, definition_ref, created_at]) => ({
 		id,
 		name: id,
@@ -159,7 +156,9 @@
 
 	function visibleRows() {
 		const q = query.trim().toLowerCase();
-		let rows = q ? PLACEHOLDER.filter((row) => row.name.toLowerCase().includes(q)) : PLACEHOLDER;
+		let rows = q
+			? PLACEHOLDER.filter((row) => row.name.toLowerCase().includes(q))
+			: PLACEHOLDER;
 		if (sortDir) {
 			rows = [...rows].sort((a, b) => sortDir * a.type.localeCompare(b.type));
 		}
@@ -246,11 +245,16 @@
 
 	// The icon shows the current order: up = ascending, down = descending.
 	function renderSortIcon() {
-		const icon = sortDir === 1 ? "arrow-up" : sortDir === -1 ? "arrow-down" : "chevrons-up-down";
+		const icon =
+			sortDir === 1 ? "arrow-up" : sortDir === -1 ? "arrow-down" : "chevrons-up-down";
 		sortEl.innerHTML = `<i data-lucide="${icon}" class="h-4 w-4"></i>`;
 		sortEl.setAttribute(
 			"aria-label",
-			sortDir === 1 ? "Sorted by type, ascending" : sortDir === -1 ? "Sorted by type, descending" : "Sort by type",
+			sortDir === 1
+				? "Sorted by type, ascending"
+				: sortDir === -1
+				  ? "Sorted by type, descending"
+				  : "Sort by type",
 		);
 	}
 

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from adminui.api.routers import home
+from adminui.api.routers import home, tables
 
 app = FastAPI(title="MetrANOVA Admin UI API")
 
@@ -16,3 +16,4 @@ app.add_middleware(
 )
 
 app.include_router(home.router, prefix="/api")
+app.include_router(tables.router, prefix="/api")
