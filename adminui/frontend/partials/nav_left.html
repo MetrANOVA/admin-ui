@@ -25,7 +25,7 @@
 	</a>
 
 	<!-- Navigation -->
-	<div class="mt-8 flex min-h-0 w-full flex-1 flex-col gap-4">
+	<div class="mt-8 flex min-h-0 w-full flex-1 flex-col gap-4 overflow-y-auto">
 		<!-- Actions -->
 		<section class="w-full border-t-2 border-copy-alt pt-1">
 			<p class="pb-2 pt-1 px-0 text-[12px] font-normal leading-4 text-copy-alt">Action</p>
@@ -175,14 +175,53 @@
 
 	<!-- Footer -->
 	<div class="mt-auto flex w-full flex-col items-start gap-3 px-3 pt-8">
-		<!-- Theme toggle -->
-		<pkts-input-switch id="theme-toggle"></pkts-input-switch>
-		<!-- <div id="theme-toggle" class="pkts-input-switch">
-			<input type="checkbox" />
-			<div class="indicator"></div>
-		</div> -->
+		<!-- User avatar, with the theme toggle on the same row so it stays out of the menu -->
+		<div class="flex w-full items-center justify-between gap-3">
+			<!-- The avatar opens the account menu (see the user menu handlers in app.js) -->
+			<div class="pkts-dropdown">
+				<button
+					id="user-menu-button"
+					type="button"
+					aria-haspopup="menu"
+					aria-expanded="false"
+					aria-controls="user-menu"
+					aria-label="Account menu"
+					class="block rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+				>
+					<!-- Initials come from /auth/me (see checkSession in app.js) -->
+					<span class="pkts-avatar pkts-medium pkts-grape"
+						><span id="user-avatar">JL</span></span
+					>
+				</button>
 
-		<!-- User avatar -->
-		<div class="pkts-avatar pkts-medium pkts-grape"><span>JL</span></div>
+				<!-- Opens upwards, since the avatar sits at the bottom of the nav -->
+				<div
+					id="user-menu"
+					role="menu"
+					aria-labelledby="user-menu-button"
+					class="pkts-dropdown-content pkts-hidden bottom-full left-0 mb-2 w-56 rounded border border-shadow !bg-surface2 text-copy"
+				>
+					<p id="user-menu-name" class="m-0 truncate px-3 py-2 text-xs text-copy-alt"></p>
+
+					<!-- Hidden until the API reports a logged-in user -->
+					<button
+						id="logout-button"
+						type="button"
+						role="menuitem"
+						style="display: none"
+						class="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm text-copy transition-colors hover:bg-surface1"
+					>
+						<i data-lucide="log-out" class="h-5 w-5"></i>
+						Log out
+					</button>
+				</div>
+			</div>
+
+			<pkts-input-switch id="theme-toggle"></pkts-input-switch>
+			<!-- <div id="theme-toggle" class="pkts-input-switch">
+				<input type="checkbox" />
+				<div class="indicator"></div>
+			</div> -->
+		</div>
 	</div>
 </nav>
