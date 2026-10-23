@@ -16,12 +16,13 @@ window.ADMINUI_API_BASE = window.ADMINUI_API_BASE || "http://localhost:8000/api"
 // the actual page fragment htmx fetches.
 const ROUTES = {
 	"/": "/pages/home.html",
-	"/define-table": "/pages/clickhouse-table.html",
+	"/define-table": "/pages/define-clickhouse-table.html",
 	"/metadata-manager": "/pages/manage-metadata.html",
 	"/metadata-saved": "/pages/metadata-saved.html",
 	"/metadata-records": "/pages/metadata-records.html",
 	"/define-pipeline": "/pages/define-pipelines.html",
-	"/tables": "/pages/tables.html",
+	"/tables": "/pages/clickhouse-tables.html",
+	"/table-details": "/pages/clickhouse-table-detail.html",
 	"/pipelines": "/pages/pipelines.html",
 	"/pipeline-details": "/pages/pipeline-detail.html",
 };

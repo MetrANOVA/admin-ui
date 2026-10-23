@@ -698,6 +698,13 @@ class PktsFormControl extends HTMLElement {
 		const invalid = Boolean(visibleError);
 
 		this._control.disabled = this._disabled;
+		// Some Packets controls (seen with pkts-input-checkbox) disable their inner
+		// <input> but don't re-enable it when disabled goes back to false.
+		if (!this._disabled) {
+			this._control.querySelectorAll("input:disabled").forEach((input) => {
+				input.disabled = false;
+			});
+		}
 		this._control.required = this._required;
 		this._control.error = visibleError;
 
