@@ -1,0 +1,31 @@
+<main class="table-page">
+	<h2 class="table-page__title" id="table-title">Create New Clickhouse Table</h2>
+
+	<section class="table-panel" aria-labelledby="table-title">
+		<form id="table-form" novalidate>
+			<json-form id="table-json-form" class="table-json-form"></json-form>
+			<p id="table-form-errors" class="table-form-errors" role="alert" hidden></p>
+			<pkts-form-actions form="table-form"></pkts-form-actions>
+		</form>
+
+		<!-- Shown after a successful save -->
+		<div id="table-success-actions" class="table-success-actions" hidden>
+			<pkts-button
+				id="table-create-another"
+				type="button"
+				variant="secondary"
+				label="Create another table"
+			></pkts-button>
+
+			<pkts-button
+				id="table-view-library"
+				type="button"
+				variant="primary"
+				label="View in Library"
+				hx-get="/pages/clickhouse-tables.html"
+				hx-target="#main-content"
+				hx-push-url="/tables"
+			></pkts-button>
+		</div>
+	</section>
+</main>
