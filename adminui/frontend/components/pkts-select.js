@@ -70,6 +70,8 @@ export class PKTSSelect extends HTMLElement {
 
 		this._handleOptionClickBound = this._handleOptionClick.bind(this);
 
+		this._handleOptionMousedownBound = this._handleOptionMousedown.bind(this);
+
 		this._handleOutsideClickBound = this._handleOutsideClick.bind(this);
 	}
 
@@ -228,7 +230,14 @@ export class PKTSSelect extends HTMLElement {
 	}
 
 	set error(value) {
-		this._error = value === undefined || value === null || value === false ? "" : String(value);
+		const error = value === undefined || value === null || value === false ? "" : String(value);
+
+		// Re-rendering rebuilds the options, so only do it when the message changes
+		if (error === this._error) {
+			return;
+		}
+
+		this._error = error;
 
 		this._reflectStringAttribute("error", this._error);
 
@@ -441,6 +450,8 @@ export class PKTSSelect extends HTMLElement {
 
 		this.optionsEl?.addEventListener("click", this._handleOptionClickBound);
 
+		this.optionsEl?.addEventListener("mousedown", this._handleOptionMousedownBound);
+
 		document.addEventListener("click", this._handleOutsideClickBound);
 
 		this._listenersAttached = true;
@@ -460,6 +471,8 @@ export class PKTSSelect extends HTMLElement {
 		this.actionBtn?.removeEventListener("click", this._handleActionClickBound);
 
 		this.optionsEl?.removeEventListener("click", this._handleOptionClickBound);
+
+		this.optionsEl?.removeEventListener("mousedown", this._handleOptionMousedownBound);
 
 		document.removeEventListener("click", this._handleOutsideClickBound);
 
@@ -578,6 +591,14 @@ export class PKTSSelect extends HTMLElement {
 		}
 
 		this._selectOption(option);
+	}
+
+	// Pressing an option would otherwise move focus off the input. That blur
+	// lets pkts-form-control mark the field dirty and set `error`, which
+	// re-renders the options under the pointer, so the mouseup lands on a new
+	// <li> and the click never fires. Keeping focus in the input avoids it.
+	_handleOptionMousedown(event) {
+		event.preventDefault();
 	}
 
 	_handleOutsideClick(event) {

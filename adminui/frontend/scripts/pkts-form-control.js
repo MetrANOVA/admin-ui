@@ -857,7 +857,14 @@ class PktsFormControl extends HTMLElement {
 	 * inner component emits an event other than `eventName`), sync it now and
 	 * emit "change" so the renderer and JSON Forms get it.
 	 */
-	_handleBlur() {
+	_handleBlur(event) {
+		// Focus moving within the control (a select's input to its options, for
+		// one) hasn't left the field yet. Marking it dirty here would set `error`
+		// and re-render the options while they are being used.
+		if (event?.relatedTarget && this._control?.contains(event.relatedTarget)) {
+			return;
+		}
+
 		if (!this._isToggle() && this._control) {
 			const current = this._control.value;
 
