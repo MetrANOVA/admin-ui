@@ -1599,6 +1599,103 @@ json-form[data-readonly]
 }
 
 /* =========================================================
+   Record editor (Metadata Manager)
+   JSONForms' own array renderer comes unstyled; these rules dress it
+   for the record editor. The array rules mirror
+   .pipeline-json-form and can merge with it once the two forms share
+   a class.
+   ========================================================= */
+/* The field labels come out a fixed dark grey, unreadable in the dark theme */
+#records-fields .form-container label {
+	color: var(--copy);
+}
+/* components.css strips the border and background from every
+   .form-container input, which hides the Packets checkbox. Put its box
+   back, the same way the Clickhouse table form does. */
+#records-fields .pkts-input-checkbox input[type="checkbox"] {
+	flex: none;
+	width: 1.5rem;
+	height: 1.5rem;
+	border: 3px solid var(--copy-alt);
+	border-radius: 0.375rem;
+	background-color: var(--default-surface);
+	cursor: pointer;
+}
+#records-fields .control {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+#records-fields .control .label,
+#records-fields .array-list-label {
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--copy);
+}
+#records-fields .control .error {
+	font-size: 0.875rem;
+	color: var(--error);
+}
+#records-fields .array-list {
+	margin: 0;
+	padding: 0.5rem 0.75rem 0.75rem;
+	border: 1px solid var(--copy-alt);
+	border-radius: 8px;
+}
+#records-fields .array-list-legend {
+	display: flex;
+	flex-direction: row-reverse;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0 0.25rem;
+}
+#records-fields .array-list-item {
+	display: flex;
+	flex-direction: row-reverse;
+	align-items: center;
+	gap: 0.5rem;
+	margin-top: 0.5rem;
+}
+#records-fields .array-list-item-content {
+	flex: 1;
+	min-width: 0;
+}
+#records-fields .array-list-item-content input {
+	width: 100%;
+	padding: 0.375rem 0.5rem;
+	border: 1px solid var(--copy-alt);
+	border-radius: 4px;
+	background: var(--background);
+	color: var(--copy);
+}
+#records-fields .array-list-item-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+#records-fields .array-list-item-label,
+#records-fields .array-list-item-move-up,
+#records-fields .array-list-item-move-down {
+	display: none;
+}
+#records-fields .array-list-add,
+#records-fields .array-list-item-delete {
+	width: 1.75rem;
+	height: 1.75rem;
+	border: 1px solid var(--copy-alt);
+	border-radius: 9999px;
+	background: transparent;
+	color: var(--copy);
+	line-height: 1;
+	cursor: pointer;
+}
+#records-fields .array-list-no-data {
+	margin: 0.5rem 0 0;
+	font-size: 0.875rem;
+	color: var(--copy-alt);
+}
+
+/* =========================================================
    Data tables, as drawn in the Admin Console mockups
    (opt in with .mn-data-table on a .pkts-data-table)
    ========================================================= */
@@ -1701,4 +1798,32 @@ json-form[data-readonly]
 	font-size: 0.875rem;
 	line-height: 1.75rem;
 	text-align: center;
+}
+
+/* Pager row: tiles in the middle, rows-per-page on the right */
+.mn-pager {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 1.75rem;
+}
+.mn-page-size {
+	position: absolute;
+	right: 0;
+	display: flex;
+	align-items: center;
+	gap: 0.375rem;
+	color: var(--header-copy-color, var(--background));
+	font-size: 0.875rem;
+}
+.mn-page-size select {
+	height: 1.75rem;
+	padding: 0 0.375rem;
+	border: 0;
+	border-radius: 2px;
+	background: var(--mn-table-surface);
+	color: var(--copy);
+	font-size: 0.875rem;
+	cursor: pointer;
 }
