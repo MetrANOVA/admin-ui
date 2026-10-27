@@ -1600,10 +1600,9 @@ json-form[data-readonly]
 
 /* =========================================================
    Record editor (Metadata Manager)
-   JSONForms' own array renderer comes unstyled; these rules dress it
-   for the record editor. The array rules mirror
-   .pipeline-json-form and can merge with it once the two forms share
-   a class.
+   Labels, the Packets checkbox and JSONForms' own list renderer in the
+   record editor. The list rules follow .pipeline-json-form and can merge
+   with it once the two forms share a class.
    ========================================================= */
 /* The field labels come out a fixed dark grey, unreadable in the dark theme */
 #records-fields .form-container label {
@@ -1636,22 +1635,54 @@ json-form[data-readonly]
 	font-size: 0.875rem;
 	color: var(--error);
 }
+/* Lists, laid out like the ones on Define Pipeline: label on the left,
+   "+ Add" on the right, a trash icon next to each item. The Packets buttons
+   come from scripts/form-records-editor.js. */
 #records-fields .array-list {
+	min-width: 0;
 	margin: 0;
-	padding: 0.5rem 0.75rem 0.75rem;
-	border: 1px solid var(--copy-alt);
-	border-radius: 8px;
+	padding: 0;
+	border: 0;
 }
 #records-fields .array-list-legend {
 	display: flex;
-	flex-direction: row-reverse;
+	justify-content: space-between;
 	align-items: center;
-	gap: 0.5rem;
-	padding: 0 0.25rem;
+	width: 100%;
+	margin-bottom: 8px;
+	padding: 0;
+}
+#records-fields .array-list-legend .array-list-label {
+	order: 1;
+	white-space: nowrap;
+}
+#records-fields .array-list-legend pkts-button {
+	order: 2;
+}
+#records-fields .array-list-legend pkts-button button,
+.dark #records-fields .array-list-legend pkts-button button {
+	min-height: auto;
+	height: fit-content;
+	padding: 4px 14px;
+	border: none;
+	border-radius: 999px;
+	background-color: var(--secondary);
+	color: var(--default-surface);
+	font-size: 14px;
+	font-weight: 600;
+}
+#records-fields .array-list-legend pkts-button button:hover {
+	background-color: var(--default-hover);
+}
+#records-fields .array-list-legend pkts-button button:active {
+	background-color: var(--default-active);
+}
+/* JSON Forms' own buttons stay in the DOM (the twins click them) but are hidden */
+#records-fields button[data-replaced="true"] {
+	display: none;
 }
 #records-fields .array-list-item {
 	display: flex;
-	flex-direction: row-reverse;
 	align-items: center;
 	gap: 0.5rem;
 	margin-top: 0.5rem;
@@ -1660,39 +1691,29 @@ json-form[data-readonly]
 	flex: 1;
 	min-width: 0;
 }
+/* Same box as the Packets text inputs above */
 #records-fields .array-list-item-content input {
 	width: 100%;
-	padding: 0.375rem 0.5rem;
+	height: 42px;
+	padding: 0 8px;
 	border: 1px solid var(--copy-alt);
-	border-radius: 4px;
-	background: var(--background);
+	border-radius: 0;
+	background: var(--default-surface);
 	color: var(--copy);
+	font-size: 1rem;
 }
 #records-fields .array-list-item-toolbar {
 	display: flex;
+	flex-direction: row;
 	align-items: center;
-	gap: 0.25rem;
+	order: 9999;
 }
+/* Order doesn't carry meaning in these lists, so no move buttons */
 #records-fields .array-list-item-label,
 #records-fields .array-list-item-move-up,
-#records-fields .array-list-item-move-down {
-	display: none;
-}
-#records-fields .array-list-add,
-#records-fields .array-list-item-delete {
-	width: 1.75rem;
-	height: 1.75rem;
-	border: 1px solid var(--copy-alt);
-	border-radius: 9999px;
-	background: transparent;
-	color: var(--copy);
-	line-height: 1;
-	cursor: pointer;
-}
+#records-fields .array-list-item-move-down,
 #records-fields .array-list-no-data {
-	margin: 0.5rem 0 0;
-	font-size: 0.875rem;
-	color: var(--copy-alt);
+	display: none;
 }
 
 /* =========================================================
