@@ -307,6 +307,16 @@ function createCustomRenderer(componentName) {
 					}
 
 					handleChange(schemaPath, nextValue);
+
+					// jsonforms-esm only copies the keys JSON Forms still has into
+					// the form's data, so a top-level field cleared to undefined
+					// keeps its old value in serializeForm(). Drop it here.
+					if (nextValue === undefined && !schemaPath.includes(".")) {
+						const form = event.target?.closest?.("json-form");
+						if (form?.instance && schemaPath in form.instance) {
+							delete form.instance[schemaPath];
+						}
+					}
 				},
 			},
 		};
