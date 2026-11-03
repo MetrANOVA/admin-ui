@@ -151,9 +151,14 @@
 
 	document.getElementById("records-title").textContent = `meta_${slug}`;
 
+	function isEmpty(value) {
+		return value === null || value === undefined || value === "";
+	}
+
+	// "+ Add" leaves an empty item until something is typed; it isn't an edit
 	function show(value) {
-		if (value === null || value === undefined) return "";
-		if (Array.isArray(value)) return value.join(", ");
+		if (isEmpty(value)) return "";
+		if (Array.isArray(value)) return value.filter((item) => !isEmpty(item)).join(", ");
 		if (typeof value === "object") return JSON.stringify(value);
 		return String(value);
 	}
@@ -308,6 +313,7 @@
 	function renderEditor(rec) {
 		const form = document.createElement("json-form");
 		form.id = "records-json-form";
+		form.className = "records-json-form";
 		form.setAttribute("schema-data", JSON.stringify(schemaFor()));
 		form.setAttribute("layout-data", JSON.stringify(layoutFor()));
 		form.setAttribute("form-data", JSON.stringify(formDataFor(rec)));
@@ -364,7 +370,8 @@
 	async function save(rec, data) {
 		const body = { ...rec };
 		for (const col of EDITABLE) {
-			body[col.name] = col.name in data ? data[col.name] : null;
+			const value = col.name in data ? data[col.name] : null;
+			body[col.name] = Array.isArray(value) ? value.filter((item) => !isEmpty(item)) : value;
 		}
 		const version = rec.ref.split("__v").pop();
 		const url = `${API}/metadata/${encodeURIComponent(slug)}/${encodeURIComponent(rec[RECORD_ID])}/${version}`;

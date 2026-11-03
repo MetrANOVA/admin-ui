@@ -3,30 +3,16 @@
 // trash icon next to each item. JSON Forms' own buttons stay in the DOM and
 // still do the adding and deleting; the Packets twins only click them.
 import {
-	createIcon,
-	replaceWithTwin,
 	syncDisabledState,
+	upgradeAddButtons,
 	upgradeDeleteButtons,
 	watchForm,
 } from "/scripts/utils/json-form-page.js";
 
 const FORM_SELECTOR = "#records-json-form";
 
-function upgradeAddButtons(form) {
-	form.querySelectorAll("legend.array-list-legend button.array-list-add").forEach((nativeBtn) => {
-		if (nativeBtn.dataset.replaced) return;
-
-		const btn = document.createElement("pkts-button");
-		btn.className = "records-list-add";
-		btn.setAttribute("type", "button");
-		btn.append(createIcon("plus"), document.createTextNode("Add"));
-
-		replaceWithTwin(nativeBtn, btn);
-	});
-}
-
 function enhanceRecordLists(form) {
-	upgradeAddButtons(form);
+	upgradeAddButtons(form, "records-list-add");
 	upgradeDeleteButtons(form);
 	syncDisabledState(form);
 }

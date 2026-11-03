@@ -74,6 +74,25 @@ export function replaceWithTwin(nativeBtn, twin) {
 	twin.toggleAttribute("disabled", nativeBtn.disabled);
 }
 
+// className is the class for the "+ Add" twin, or a function of the list's
+// legend returning it; a list it returns nothing for keeps the JSON Forms button
+export function upgradeAddButtons(form, className) {
+	form.querySelectorAll("legend.array-list-legend").forEach((legend) => {
+		const nativeBtn = legend.querySelector("button.array-list-add");
+		if (!nativeBtn || nativeBtn.dataset.replaced) return;
+
+		const cls = typeof className === "function" ? className(legend) : className;
+		if (!cls) return;
+
+		const btn = document.createElement("pkts-button");
+		btn.className = cls;
+		btn.setAttribute("type", "button");
+		btn.append(createIcon("plus"), document.createTextNode("Add"));
+
+		replaceWithTwin(nativeBtn, btn);
+	});
+}
+
 export function upgradeDeleteButtons(form) {
 	form.querySelectorAll("button.array-list-item-delete").forEach((nativeBtn) => {
 		if (nativeBtn.dataset.replaced) return;
