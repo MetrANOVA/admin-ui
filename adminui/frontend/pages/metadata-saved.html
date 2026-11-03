@@ -63,16 +63,16 @@
 </section>
 
 <script type="module">
-	// Layout pass for issue #3, the Success view. Unlike the list, every column
-	// here does have a source once the real endpoint lands (issue #9):
-	// GET /metadata/ already returns meta_fields with field_name, field_type and
-	// nullable, and Primary Key is derived from the type's identifier array.
+	// The Success view, shown after a record is saved. With ?type=<slug> it
+	// describes that table from its definition (GET /type/{slug}): fields with
+	// their type and nullability, and Primary Key from the identifier array.
+	// Without it, it falls back to a sample so the page can be opened on its own.
 	const PAGE_SIZE = 6;
 
-	// Shaped like a meta_fields entry plus the type's identifier, so swapping in
-	// the real response is a straight substitution.
-	const IDENTIFIER = ["start_time", "collector_id"];
-	const FIELDS = [
+	const slug = new URLSearchParams(window.location.search).get("type");
+
+	let IDENTIFIER = ["start_time", "collector_id"];
+	let FIELDS = [
 		{ field_name: "start_time", field_type: "DateTime64(3, 'UTC')", nullable: false },
 		{ field_name: "end_time", field_type: "DateTime64(3, 'UTC')", nullable: false },
 		{ field_name: "insert_time", field_type: "DateTime64(3, 'UTC')", nullable: false },
@@ -157,5 +157,27 @@
 		render();
 	});
 
-	render();
+	async function init() {
+		if (slug) {
+			document.getElementById("saved-table-name").textContent = `meta_${slug}`;
+			try {
+				const response = await fetch(`${window.ADMINUI_API_BASE}/type/${encodeURIComponent(slug)}`, {
+					credentials: "include",
+				});
+				if (!response.ok) throw new Error(`HTTP ${response.status}`);
+				const typeDef = await response.json();
+				FIELDS = typeDef.meta_fields;
+				IDENTIFIER = typeDef.identifier;
+				document.getElementById("saved-table-type").textContent =
+					typeDef.type === "metadata" || !typeDef.type ? "Metadata Table" : "Data Table";
+			} catch (error) {
+				rowsEl.innerHTML = `<tr><td colspan="4" class="text-center text-copy-alt">Could not load the table definition (${error.message}).</td></tr>`;
+				pagerEl.innerHTML = "";
+				return;
+			}
+		}
+		render();
+	}
+
+	init();
 </script>
