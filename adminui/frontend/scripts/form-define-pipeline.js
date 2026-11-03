@@ -2,13 +2,12 @@ import "/components/index.js";
 import "/scripts/customRenderer.js";
 import { confirmDialog } from "/components/pkts-modal.js";
 import {
-	createIcon,
 	handleFormActions,
 	mountForm,
 	onPageLoad,
-	replaceWithTwin,
 	setPageMode,
 	syncDisabledState,
+	upgradeAddButtons,
 	upgradeDeleteButtons,
 	validateForm,
 	watchForm,
@@ -121,23 +120,6 @@ function tagArrayLists(form) {
 	});
 }
 
-function upgradeAddButtons(form) {
-	form.querySelectorAll("legend.array-list-legend").forEach((legend) => {
-		const config = getListConfig(legend);
-		if (!config) return;
-
-		const nativeBtn = legend.querySelector("button.array-list-add");
-		if (!nativeBtn || nativeBtn.dataset.replaced) return;
-
-		const btn = document.createElement("pkts-button");
-		btn.className = config.addButton;
-		btn.setAttribute("type", "button");
-		btn.append(createIcon("plus"), document.createTextNode("Add"));
-
-		replaceWithTwin(nativeBtn, btn);
-	});
-}
-
 /* =========================================================
    Rule rows
    Marks each row (data-row) and each item in it (data-role) so the
@@ -225,7 +207,7 @@ function syncMatchFieldChips(form) {
 
 function enhancePipelineForm(form) {
 	tagArrayLists(form);
-	upgradeAddButtons(form);
+	upgradeAddButtons(form, (legend) => getListConfig(legend)?.addButton);
 	upgradeDeleteButtons(form);
 	syncDisabledState(form);
 	tagRuleRows(form);

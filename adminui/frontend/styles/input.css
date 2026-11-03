@@ -933,7 +933,8 @@ pkts-modal .table-confirm-preview tbody td {
    ========================================================= */
 
 .pipeline-json-form .array-list,
-.table-json-form .array-list {
+.table-json-form .array-list,
+.records-json-form .array-list {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
@@ -941,7 +942,8 @@ pkts-modal .table-confirm-preview tbody td {
 }
 
 .pipeline-json-form .array-list-item,
-.table-json-form .array-list-item {
+.table-json-form .array-list-item,
+.records-json-form .array-list-item {
 	display: flex;
 	flex-direction: row;
 }
@@ -1005,7 +1007,8 @@ fieldset.array-list .array-list-item:has(label) label {
    ========================================================= */
 
 .pipeline-json-form .array-list-legend,
-.table-json-form .array-list-legend {
+.table-json-form .array-list-legend,
+.records-json-form .array-list-legend {
 	display: flex;
 	flex-direction: row;
 	direction: ltr;
@@ -1016,7 +1019,8 @@ fieldset.array-list .array-list-item:has(label) label {
 }
 
 .pipeline-json-form .array-list-legend .array-list-label,
-.table-json-form .array-list-legend .array-list-label {
+.table-json-form .array-list-legend .array-list-label,
+.records-json-form .array-list-legend .array-list-label {
 	order: 1;
 	display: flex;
 	flex-direction: row;
@@ -1035,17 +1039,21 @@ fieldset.array-list:not(:has(.array-list-item)) legend.array-list-legend {
 
 /* Native buttons stay in the DOM (so .click() works) but are hidden */
 .pipeline-json-form button[data-replaced="true"],
-.table-json-form button[data-replaced="true"] {
+.table-json-form button[data-replaced="true"],
+.records-json-form button[data-replaced="true"] {
 	display: none;
 }
 
 /* Add button: pill on the right of the header */
-.pipeline-json-form .array-list-legend pkts-button {
+.pipeline-json-form .array-list-legend pkts-button,
+.records-json-form .array-list-legend pkts-button {
 	order: 2;
 }
 
 .pipeline-json-form .array-list-legend pkts-button button,
-.dark .pipeline-json-form .array-list-legend pkts-button button {
+.dark .pipeline-json-form .array-list-legend pkts-button button,
+.records-json-form .array-list-legend pkts-button button,
+.dark .records-json-form .array-list-legend pkts-button button {
 	background-color: var(--secondary);
 	color: var(--default-surface);
 	font-weight: 600;
@@ -1057,15 +1065,18 @@ fieldset.array-list:not(:has(.array-list-item)) legend.array-list-legend {
 	border-radius: 999px;
 }
 
-.pipeline-json-form .array-list-legend pkts-button button:hover {
+.pipeline-json-form .array-list-legend pkts-button button:hover,
+.records-json-form .array-list-legend pkts-button button:hover {
 	background-color: var(--default-hover);
 }
 
-.pipeline-json-form .array-list-legend pkts-button button:active {
+.pipeline-json-form .array-list-legend pkts-button button:active,
+.records-json-form .array-list-legend pkts-button button:active {
 	background-color: var(--default-active);
 }
 
-.pipeline-json-form .array-list-legend pkts-button button:focus:not(:focus-visible) {
+.pipeline-json-form .array-list-legend pkts-button button:focus:not(:focus-visible),
+.records-json-form .array-list-legend pkts-button button:focus:not(:focus-visible) {
 	background-color: var(--secondary);
 	color: var(--default-surface);
 	box-shadow: none;
@@ -1595,6 +1606,59 @@ json-form[data-readonly]
 json-form[data-readonly]
 	[data-role="config-body"]
 	.vertical-layout-item:has(> pkts-form-control[data-empty]) {
+	display: none;
+}
+
+/* =========================================================
+   Record editor (Metadata Manager)
+   The lists share the rules above with Define Pipeline (.records-json-form);
+   these are the parts only the record editor needs.
+   ========================================================= */
+/* The field and list labels come out a fixed dark grey, unreadable in the
+   dark theme */
+.records-json-form .form-container label,
+.records-json-form .array-list-label {
+	color: var(--copy);
+}
+/* components.css strips the border and background from every
+   .form-container input, which hides the Packets checkbox. Put its box
+   back, the same way the Clickhouse table form does. */
+.records-json-form .pkts-input-checkbox input[type="checkbox"] {
+	flex: none;
+	width: 1.5rem;
+	height: 1.5rem;
+	border: 3px solid var(--copy-alt);
+	border-radius: 0.375rem;
+	background-color: var(--default-surface);
+	cursor: pointer;
+}
+/* List items: JSON Forms' plain input, with the trash icon beside it */
+.records-json-form .array-list-item {
+	align-items: center;
+	gap: 0.5rem;
+}
+.records-json-form .array-list-item .control {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+.records-json-form .array-list-item .control .error {
+	font-size: 0.875rem;
+	color: var(--error);
+}
+/* Same box as the Packets text inputs above */
+.records-json-form .array-list-item-content input {
+	width: 100%;
+	height: 42px;
+	padding: 0 8px;
+	border: 1px solid var(--copy-alt);
+	border-radius: 0;
+	background: var(--default-surface);
+	color: var(--copy);
+	font-size: 1rem;
+}
+/* Order doesn't carry meaning in these lists, so no move buttons */
+.records-json-form :is(.array-list-item-move-up, .array-list-item-move-down) {
 	display: none;
 }
 
