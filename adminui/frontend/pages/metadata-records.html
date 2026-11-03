@@ -324,11 +324,16 @@
 	let page = 1;
 	let selectedId = null;
 
+	function isEmpty(value) {
+		return value === null || value === undefined || value === "";
+	}
+
+	// "+ Add" leaves an empty item until something is typed; it isn't an edit
 	function show(value) {
-		return value === null || value === undefined
+		return isEmpty(value)
 			? ""
 			: Array.isArray(value)
-				? value.join(", ")
+				? value.filter((item) => !isEmpty(item)).join(", ")
 				: String(value);
 	}
 
@@ -511,6 +516,7 @@
 	function renderEditor(rec) {
 		const form = document.createElement("json-form");
 		form.id = "records-json-form";
+		form.className = "records-json-form";
 		form.setAttribute("schema-data", JSON.stringify(schemaFor()));
 		form.setAttribute("layout-data", JSON.stringify(layoutFor()));
 		form.setAttribute("form-data", JSON.stringify(formDataFor(rec)));
