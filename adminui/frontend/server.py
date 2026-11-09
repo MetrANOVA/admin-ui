@@ -60,6 +60,9 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
         path = posixpath.normpath(unquote(path))
         # this is an SPA app. By default, vend the app shell for all routes
         output_path = os.path.join(root, "app", "index.html")
+        # The login page stands outside the shell (no nav), so it gets its own file.
+        if path == "/login":
+            return os.path.join(root, "app", "login.html")
         # unless the route is listed in STATIC_ROUTES. In that case...
         for pattern in STATIC_ROUTES:
             if path.startswith(pattern):
