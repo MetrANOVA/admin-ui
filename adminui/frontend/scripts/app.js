@@ -4,6 +4,10 @@ import "https://esm.sh/@esnet/packets-ui-web@2.0.2?bundle";
 // API base URL for the mock backend. Update this once the real API is available.
 window.ADMINUI_API_BASE = window.ADMINUI_API_BASE || "http://localhost:8000/api";
 
+// Login page. A server that shares its domain with another app can serve it
+// elsewhere and inject a different value, as it does for the API base.
+window.ADMINUI_LOGIN = window.ADMINUI_LOGIN || "/login";
+
 // Tell htmx not to use its history cache at all
 // So, back/forward always triggers a real reload rather than a snapshot restore.
 
@@ -103,7 +107,7 @@ async function checkSession() {
 	}
 	if (response.status === 401) {
 		const next = window.location.pathname + window.location.search;
-		window.location.replace(`/login?next=${encodeURIComponent(next)}`);
+		window.location.replace(`${window.ADMINUI_LOGIN}?next=${encodeURIComponent(next)}`);
 		return;
 	}
 	if (!response.ok) {
@@ -176,6 +180,6 @@ document.addEventListener("click", async (event) => {
 	try {
 		await fetch(`${window.ADMINUI_API_BASE}/auth/logout`, { method: "POST", credentials: "include" });
 	} finally {
-		window.location.replace("/login");
+		window.location.replace(window.ADMINUI_LOGIN);
 	}
 });

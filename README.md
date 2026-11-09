@@ -45,8 +45,10 @@ ADMINUI_AUTH_HTPASSWD=/etc/nginx/.htpasswd make run-api
 
 Sessions are cookies signed with `ADMINUI_AUTH_SECRET`; without it a random
 secret is generated at start-up, so every restart logs everyone out. The login
-page is at `/login`. `GET /api/auth/check` returns 200 or 401 for use with
-nginx's `auth_request`, if the whole app should be gated on the cookie.
+page is at `/login`; a server that serves it elsewhere injects
+`window.ADMINUI_LOGIN`, as it does `window.ADMINUI_API_BASE`. `GET
+/api/auth/check` returns 200 or 401 for use with nginx's `auth_request`, if the
+whole app should be gated on the cookie.
 
 The API allows requests from `http://localhost:5001` and `http://127.0.0.1:5001`;
 serve the frontend elsewhere and list it in `ADMINUI_CORS_ORIGINS`
